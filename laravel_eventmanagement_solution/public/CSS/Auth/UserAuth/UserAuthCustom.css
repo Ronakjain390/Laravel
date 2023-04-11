@@ -1,0 +1,212 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+    background-color: rgba(47, 38, 38, 0.277);
+    color: #1c1e21;
+}
+
+main {
+    height: 90vh;
+    width: 100vw;
+    position: relative;
+    margin: 0 auto;
+}
+
+.row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.colm-logo {
+    flex: 0 0 50%;
+    text-align: right;
+}
+
+.colm-form {
+    flex: 0 0 40%;
+    text-align: center;
+}
+
+.colm-logo h2 {
+    font: 26px;
+    font-weight: 400;
+    padding: 0 30px;
+    line-height: 32px;
+}
+
+.colm-form .form-container {
+    background-color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    padding: 20px;
+    max-width: 400px;
+}
+
+.colm-form .form-container input,
+.colm-form .form-container .btn-login {
+    width: 100%;
+    margin: 5px 0;
+    height: 45px;
+    vertical-align: middle;
+    font-size: 16px;
+}
+
+.colm-form .form-container input {
+    border: 1px solid #dddfe2;
+    color: #1d2129;
+    padding: 0 8px;
+    outline: none;
+}
+
+.colm-form .form-container input:focus {
+    border-color: #1877f2;
+    box-shadow: 0 0 0 2px #e7f3ff;
+}
+
+.colm-form .form-container .btn-login {
+    background-color: #1877f2;
+    border: none;
+    border-radius: 6px;
+    font-size: 20px;
+    padding: 0 16px;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.colm-form .form-container a {
+    display: block;
+    color: #1877f2;
+    font-size: 14px;
+    text-decoration: none;
+    padding: 10px 0 20px;
+    /* border-bottom: 1px solid #dadde1; */
+}
+/* .colm-form .form-container .logo a {
+    padding: 0;
+} */
+.colm-form .form-container a:hover {
+    text-decoration: underline;
+}
+
+.colm-form .form-container .btn-new {
+    background-color: #42b72a;
+    border: none;
+    border-radius: 6px;
+    font-size: 17px;
+    line-height: 48px;
+    padding: 0 16px;
+    color: #ffffff;
+    font-weight: 700;
+    margin-top: 20px;
+}
+
+.colm-form p {
+    font-size: 14px;
+}
+
+.colm-form p a {
+    text-decoration: none;
+    color: #1c1e21;
+    font-weight: 600;
+}
+
+.colm-form p a:hover {
+    text-decoration: underline;
+}
+
+.colm-form .form-container .input-box{
+    display: flex;
+    align-items: center;
+    height: 50px;
+    width: 100%;
+    margin: 10px 0;
+    position: relative;
+}
+.colm-form .form-container .input-box i {
+    position: absolute;
+    color: #0d6efd;
+    font-size: 17px;
+    top: 60%;
+}
+.colm-form .form-container .form-outline.flex-fill {
+    margin: 10px 0;
+    width: 100%;
+    height: 100%;
+}
+
+.colm-form .form-container span i{
+    right: 10px;
+    cursor: pointer;
+    top: 60%;
+    transform: translateY(-50%);
+}
+.colm-form .form-container .text{
+    /* font-size: 14px; */
+    font-weight: 500;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+.colm-form .form-container .text a{
+    font-size: 12px;
+}
+.colm-form .form-container .text span{
+    padding: 4px 0;
+}
+.colm-form .form-container button{
+    color: #fff;
+    background: #0d6efd;
+    border-radius: 6px;
+    padding: 0;
+    width: 100%;
+    border: none;
+    outline: none;
+    border-radius: 4px;
+    padding: 10px 0;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.4s ease;
+}
+.colm-form .form-container .signup {
+    margin-top: 6px;
+    font-size: 12px;
+    margin-bottom: 24px;
+}
+.colm-form .form-container .signup a{
+    display: inline-block;
+    padding: 0;
+    font-size: 12px;
+}
+.colm-form .form-container input{
+    height: 100%;
+    margin-bottom: 10px;
+    width: 100%;
+    outline: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0 30px;
+    font-size: 16px;
+    font-weight: 500;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+.colm-form .form-container .input-box input:focus, .colm-form .form-container .input-box input:valid {
+    border-color: #0d6efd;
+    box-shadow: initial;
+}
