@@ -19,23 +19,8 @@ use App\Http\Livewire\Home\Auth\ForgotPasswordOtp;
 use App\Http\Livewire\Home\Auth\OtpConfirmation;
 use App\Http\Livewire\Home\Auth\ChangePassword;
 use App\Http\Controllers\V1\Profile\ProfileController;
-// use App\Http\Controllers\V1\Payment\PaymentController;
 use App\Http\Livewire\AcceptRejectChallanWithOtp\AcceptRejectChallanWithOtp;
 use App\Http\Livewire\AcceptRejectDocumentWithOtp\AcceptRejectDocumentWithOtp;
-
-
-// Admin Routes
-// Route::prefix('admin-dashboard')->group(function () {
-//     Route::get('/', function () {
-//         return view('admin.dashboard.index');
-//     })->name('admin-dashboard');
-// });
-
-// allusers
-// Route::get('/all-users', function () {
-//     return view('admin.dashboard.allusers.index');
-// })->name('all-users');
-// allusers
 
 // Route::get('accept-challan/{challanId}/{action}', AcceptRejectChallanWithOtp::class)->name('accept.challan');
 Route::get('accept-challan/{challanId}', AcceptRejectChallanWithOtp::class)->name('accept.challan');
@@ -87,29 +72,3 @@ Route::get('/page/{slug}', Page::class)
 
 Route::post('/save-fcm-token', 'App\Http\Controllers\V1\User\Auth\UserAuthController@storeFcmToken');
 
-// Route::post('/payment-initiate', [PaymentController::class, 'initiatePayment'])->name('payment.initiatePayment');
-
-// Route::get('/team-member/register', Register::class)
-//     ->name('team-member.register');
-
-// Route::get('/team-member/otp-login', OtpLogin::class)
-//     ->name('team-member.otplogin');
-
-// Route::get('/team-member/otp-confirmation', OtpConfirmation::class)
-//     ->name('team-member.otpconfirmation');
-
-// Route::get('/team-member/forgot-password', ForgotPassword::class)
-//     ->name('team-member.forgotPassword');
-
-// Route::get('/logout', Logout::class)
-//     ->name('team-member.logout');
-
-
-// Route::get('/plan-user', [ProfileController::class,'planUser']);
-Route::get('/transfer-data', [DataTransferController::class,'transferData']);
-// Route::get('/transfer-data-in', [DataTransferController::class,'query_in']);
-Route::get('/addcolumn', [DataTransferController::class,'addcolumn']);
-Route::get('/permissions', [DataTransferController::class,'permissions']);
-Route::get('/test-free-plan', [DataTransferController::class, 'freePlan']);
-Route::get('/addunit', [DataTransferController::class,'addunit']);
-Route::get('/update-permissions', [DataTransferController::class, 'updatePermissions']);
