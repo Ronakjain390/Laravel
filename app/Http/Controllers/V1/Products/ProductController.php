@@ -26,54 +26,8 @@ class ProductController extends Controller
     //
     public $columnDisplayNames;
     public $customColumns;
-    // public function __construct()
-    // {
-
-    //     $request = request();
-    //     $columnFilterDataset = [
-    //         'feature_id' => 1
-    //     ];
-    //     $request->merge($columnFilterDataset);
-    //     $panelColumnsController = new PanelColumnsController;
-    //     $columnsResponse = $panelColumnsController->index($request);
-    //     $columnsData = json_decode($columnsResponse->content(), true);
-    //     $columnDisplayNames = array_map(function ($column) {
-    //         return $column['panel_column_display_name'];
-    //     }, $columnsData['data']);
-
-    //     $this->customColumns = $columnDisplayNames;
-    //     array_push($columnDisplayNames, 'item_code', 'unit', 'qty', 'tax', 'rate');
-    //     $this->columnDisplayNames = $columnDisplayNames;
-    //     dd($this->columnDisplayNames);
-    // }
-    public function __construct()
-    {
-
-    }
-    // FOR SHOWING ERROR ROW WISE
-    // // Initialize row number variable
-    //     $rowNumber = 0;
-
-    //     foreach ($dataArray as $row) {
-    //         // Increment row number
-    //         $rowNumber++;
-
-    //         // Validate each row of data
-    //         $rowValidator = Validator::make($row, $validationRules);
-
-    //         if ($rowValidator->fails()) {
-    //             // Append row number to error message
-    //             $errorMessage = 'Validation error in row ' . $rowNumber . ': ' . $rowValidator->errors()->first();
-
-    //             return response()->json([
-    //                 'errors' => $errorMessage,
-    //                 'status_code' => 422,
-    //             ], 422);
-    //         }
-
-    //         // Rest of your code...
-    //     }
-    // END FOR SHOWING ERROR ROW WISE
+   
+    
 
       // DELETE for Single Product
       public function destroy($id)
