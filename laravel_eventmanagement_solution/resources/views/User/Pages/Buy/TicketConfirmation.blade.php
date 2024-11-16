@@ -1,1 +1,0 @@
-Ticket is booked.
