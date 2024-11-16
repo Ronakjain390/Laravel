@@ -1,0 +1,1 @@
+<livewire:seller.screens.deleted-sent-invoice lazy />

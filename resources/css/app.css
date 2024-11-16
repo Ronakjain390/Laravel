@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+a {
+    cursor: pointer;
+}
+*{
+    letter-spacing: 0.1em;
+}
+.va-b{
+    vertical-align: baseline;
+}
+aside#logo-sidebar {
+    background: #EBEBEB !important;
+}
+#dashboard-body {
+    background: #F2F3F4!important;
+}
+[x-cloak] {
+    display: none !important;
+}
+.select2-dropdown.select2-dropdown--below {
+    font-size: 0.6rem;
+    color: black;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    font-size: x-small; /* Change this to your desired font size */
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    font-size: x-small; /* Change this to your desired font size */
+}
+
+.select2-results__option {
+    font-size: x-small; /* Change this to your desired font size */
+}
+.select2-selection__clear{
+    display: none;
+}
+.select2-container--default .select2-search--inline .select2-search__field
+{
+    font-size: small !important;
+}
+.menu :where(li:not(.menu-title) > *:not(ul):not(details):not(.menu-title)), .menu :where(li:not(.menu-title) > details > summary:not(.menu-title)) {
+    padding-left: 0 !important;
+}
+.select2-container .select2-search--inline .select2-search__field {
+   height: 20px !important;
+}
+input {
+    color-scheme: lightgray;
+  }
+
+@import '~pace-js/themes/blue/pace-theme-minimal.css';

@@ -1,0 +1,141 @@
+<div class="border-gray-200 dark:border-gray-700">
+        <div class="container-fluid">
+            <div class="px-md-5 grid grid-cols-12 gap-0 px-0">
+                <div class="col-span-12 my-2 rounded-lg bg-[#E2DFDF] p-1">
+                    <div class="flex items-center justify-between">
+                        <div class="ml-md-n1 mb-0 pl-2 text-left text-xl">
+                            <p>SELLER</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xl"></p>
+                        </div>
+                        <div class="flex items-center">
+                        {{-- <div x-data="{ checked: false }" class="cursor-pointer h-7 inline-block relative rounded-full w-32 text-white" x-bind:class="{ 'bg-[#747472]': !checked, 'bg-[#464647]': checked }" @click="checked = !checked">
+                                <input type="checkbox" x-model="checked" class="hidden">
+                                <div class="duration-0 ease-in-out h-7 z-20 rounded-full shadow-md slider transform transition-transform translate-x-0 w-7 translate-x-24" :class="{ 'bg-[#ED9410]': checked, 'bg-[#464647]': !checked, 'translate-x-24': checked }"></div>
+                                <div class="text-xs absolute inset-0 flex items-center justify-center" x-text="checked ? 'Trial Active' : 'Start Trial'"></div>
+                            </div> --}}
+                            {{-- <div x-data="{ checked: {{ Auth::user()->seller ? 'true' : 'false' }} }" wire:model="sellerStatus" class="cursor-pointer h-7 inline-block relative rounded-full w-32 text-white" x-bind:class="{ 'bg-[#747472]': !checked, 'bg-[#464647]': checked }" @click="checked = !checked">
+                                <input type="checkbox" x-model="checked" class="hidden">
+                                <div class="duration-0 ease-in-out h-7 z-20 rounded-full shadow-md slider transform transition-transform translate-x-0 w-7 translate-x-24" :class="{ 'bg-[#ED9410]': checked, 'bg-[#464647]': !checked, 'translate-x-24': checked }"></div>
+                                <div class="text-xs absolute inset-0 flex items-center justify-center" x-text="checked ? 'Trial Active' : 'Start Trial'"></div>
+                            </div> --}}
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" wire:model="hasseller" wire:change="toggleRole('seller')" class="sr-only peer">
+                                <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+
+                            </label>
+
+
+
+                            <button type="button"  href="{{ route('pricing') }}" class="rounded-xl bg-[#e5f811] px-5 ml-20 py-1.5 text-sm font-medium text-[#464647] hover:bg-[#c5d700] focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900">Buy Plan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="px-md-5 grid grid-cols-12 gap-0 px-0">
+                <div class="col-span-12 my-2 rounded-lg bg-[#E2DFDF] p-1">
+                    <div class="flex items-center justify-between">
+                        <div class="ml-md-n1 mb-0 pl-2 text-left text-xl">
+                            <p>BUYER</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xl"></p>
+                        </div>
+                        {{-- <div class="flex items-center">
+                            <div x-data="{ checked: false }" class="cursor-pointer h-7 inline-block relative rounded-full w-32 text-white" x-bind:class="{ 'bg-[#747472]': !checked, 'bg-[#464647]': checked }" @click="checked = !checked">
+                                <input type="checkbox" x-model="checked" class="hidden">
+                                <div class="duration-0 ease-in-out h-7 z-20 rounded-full shadow-md slider transform transition-transform translate-x-0 w-7 translate-x-24" :class="{ 'bg-[#ED9410]': checked, 'bg-[#464647]': !checked, 'translate-x-24': checked }"></div>
+                                <div class="text-xs absolute inset-0 flex items-center justify-center" x-text="checked ? 'Trial Active' : 'Start Trial'"></div>
+                            </div>
+                            <button type="button" class="rounded-xl bg-[#e5f811] px-5 ml-20 py-1.5 text-sm font-medium text-[#464647] hover:bg-[#c5d700] focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900">Buy Plan</button>
+                        </div> --}}
+                        <div class="flex items-center">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" wire:model="hasbuyer" wire:change="toggleRole('buyer')"  class="sr-only peer">
+                            <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+
+                        </label>
+                        <button type="button" href="{{ route('pricing') }}" class="rounded-xl bg-[#e5f811] px-5 ml-20 py-1.5 text-sm font-medium text-[#464647] hover:bg-[#c5d700] focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900">Buy Plan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="px-md-5 grid grid-cols-12 gap-0 px-0">
+                <div class="col-span-12 my-2 rounded-lg bg-[#E2DFDF] p-1">
+                    <div class="flex items-center justify-between">
+                        <div class="ml-md-n1 mb-0 pl-2 text-left text-xl">
+                            <p>SENDER</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xl"></p>
+                        </div>
+                        {{-- <div class="flex items-center">
+                            <div x-data="{ checked: false }" class="cursor-pointer h-7 inline-block relative rounded-full w-32 text-white" x-bind:class="{ 'bg-[#747472]': !checked, 'bg-[#464647]': checked }" @click="checked = !checked">
+                                <input type="checkbox" x-model="checked" class="hidden">
+                                <div class="duration-0 ease-in-out h-7 z-20 rounded-full shadow-md slider transform transition-transform translate-x-0 w-7 translate-x-24" :class="{ 'bg-[#ED9410]': checked, 'bg-[#464647]': !checked, 'translate-x-24': checked }"></div>
+                                <div class="text-xs absolute inset-0 flex items-center justify-center" x-text="checked ? 'Trial Active' : 'Start Trial'"></div>
+                            </div>
+
+
+
+                            <button type="button" class="rounded-xl bg-[#e5f811] px-5 ml-20 py-1.5 text-sm font-medium text-[#464647] hover:bg-[#c5d700] focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900">Buy Plan</button>
+                        </div> --}}
+                        <div class="flex items-center">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" wire:model="hassender" wire:change="toggleRole('sender')" class="sr-only peer">
+                                <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+
+                            </label>
+                            <button type="button" href="{{ route('pricing') }}" class="rounded-xl bg-[#e5f811] px-5 ml-20 py-1.5 text-sm font-medium text-[#464647] hover:bg-[#c5d700] focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900">Buy Plan</button>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="px-md-5 grid grid-cols-12 gap-0 px-0">
+                <div class="col-span-12 my-2 rounded-lg bg-[#E2DFDF] p-1">
+                    <div class="flex items-center justify-between">
+                        <div class="ml-md-n1 mb-0 pl-2 text-left text-xl">
+                            <p>RECEIVER</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xl"></p>
+                        </div>
+                        {{-- <div class="flex items-center">
+
+
+                            <!-- <div x-data="{ checked: false }" class="bg-gray-300 cursor-pointer h-7 inline-block relative rounded-full w-32" @click="checked = !checked">
+                                <input type="checkbox" x-model="checked" class="hidden">
+                                <div class="duration-0 ease-in-out h-7 z-20 rounded-full shadow-md slider transform transition-transform translate-x-0 w-7 translate-x-24" :class="{ 'bg-[#ED9410]': checked, 'bg-[#464647]': !checked, 'translate-x-24': checked }"></div>
+                                <div x-bind:class="{ 'bg-gray-500': checked, 'bg-gray-100': !checked }" class="text-xs absolute inset-0 flex items-center justify-center" x-text="checked ? 'Trial Active' : 'Start Trial'"></div>
+                            </div> -->
+                            <div x-data="{ checked: false }"  class="cursor-pointer h-7 inline-block relative rounded-full w-32 text-white" x-bind:class="{ 'bg-[#747472]': !checked, 'bg-[#464647]': checked }" @click="checked = !checked">
+                                <input wire:model="hasreceiver"  wire:change="toggleRole('receiver')" type="checkbox" x-model="checked" class="hidden">
+                                <div class="duration-0 ease-in-out h-7 z-20 rounded-full shadow-md slider transform transition-transform translate-x-0 w-7 translate-x-24" :class="{ 'bg-[#ED9410]': checked, 'bg-[#464647]': !checked, 'translate-x-24': checked }"></div>
+                                <div class="text-xs absolute inset-0 flex items-center justify-center" x-text="checked ? 'Trial Active' : 'Start Trial'"></div>
+                            </div>
+
+
+                            <button type="button" class="rounded-xl bg-[#e5f811] px-5 ml-20 py-1.5 text-sm font-medium text-[#464647] hover:bg-[#c5d700] focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900">Buy Plan</button>
+                        </div> --}}
+
+                        <div class="flex items-center">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" wire:model="hasreceiver"  wire:change="toggleRole('receiver')" class="sr-only peer">
+                                <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+
+                            </label>
+                            <button type="button"  href="{{ route('pricing') }}" class="rounded-xl bg-[#e5f811] px-5 ml-20 py-1.5 text-sm font-medium text-[#464647] hover:bg-[#c5d700] focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900">Buy Plan</button>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>

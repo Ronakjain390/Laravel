@@ -1,0 +1,686 @@
+<?php
+
+namespace App\Http\Controllers\V1\TeamUser;
+
+use passport;
+use App\Models\Otp;
+use App\Models\User;
+use App\Mail\OtpMail;
+use App\Models\Feature;
+use App\Models\TeamUser;
+use Illuminate\Support\Str;
+use App\Services\OTPService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
+use App\Http\Controllers\V1\Orders\OrdersController;
+use App\Http\Controllers\V1\PanelSeriesNumber\PanelSeriesNumberController;
+
+
+class TeamUserAuthController extends Controller
+{
+
+    public function sendOTP(Request $request)
+    {
+        // Validate the input phone number
+        $validator = Validator::make($request->all(), [
+            'phone_number' => 'required|numeric',
+        ]);
+
+        // If validation fails, return error response
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid phone number',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        // Check if the user already exists
+        $userExists = TeamUser::where('phone', $request->phone_number)->exists();
+
+        if ($userExists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User already exists',
+            ]);
+        }
+
+        // Generate OTP
+        $otp = mt_rand(1000, 9999);
+
+        // Check if the phone number exists in the OTP records
+        $existingOTP = Otp::where('phone_number', $request->phone_number)->first();
+
+        if ($existingOTP) {
+            // Update the existing OTP record with the new OTP and expiry time
+            $existingOTP->otp = Hash::make($otp);
+            $existingOTP->expires_at = now()->addMinutes(5);
+            $existingOTP->save();
+        } else {
+            // Create a new OTP record if the phone number does not exist
+            $otpModel = Otp::create([
+                'phone_number' => $request->phone_number,
+                'otp' => Hash::make($otp),
+                'expires_at' => now()->addMinutes(5)
+            ]);
+        }
+
+        // SMS API - Textlocal
+        $apiKey = 'etVEU+y8WgE-lNrXaKDbdAjborAW26zsIxf9brZrLO';
+        $sender = 'TPARCH';
+        $message = "{$otp} is your OTP for new registration at www.theparchi.com. Enter this OTP to verify your mobile number.";
+        $numbers = [$request->phone_number];
+
+        // Prepare data for POST request
+        $data = array('apikey' => $apiKey, 'numbers' => $numbers, "sender" => $sender, "message" => $message);
+
+        // Send OTP via Textlocal SMS API
+        $ch = curl_init('https://api.textlocal.in/send/');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $smsresponse = curl_exec($ch);
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE); // Get the HTTP status code
+        curl_close($ch);
+
+        if ($status === 200) {
+            return response()->json([
+                'success' => true,
+                'message' => 'OTP sent successfully',
+                'otp' => $otp
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send OTP',
+            ], 500);
+        }
+    }
+
+    public function validateOTP(Request $request)
+    {
+        // Validate the input phone number and OTP
+        $validator = Validator::make($request->all(), [
+            'phone_number' => 'required|numeric',
+            'otp' => 'required|numeric',
+        ]);
+
+        // If validation fails, return error response
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid phone number or OTP',
+                'errors' => $validator->errors(),
+            ], 200);
+        }
+
+        // Check if the user already exists
+        TeamUser::where('phone', $request->phone_number)->delete();
+
+        // Retrieve the OTP record from the database
+        $storedOTP = Otp::where('phone_number', $request->phone_number)->first();
+
+        // Verify the provided OTP against the stored OTP
+        if ($storedOTP && Hash::check($request->otp, $storedOTP->otp)) {
+            // Create a new user with the phone number
+            $user = new User();
+            $user->phone = $request->phone_number;
+            $user->save();
+            $storedOTP->delete();
+
+            // Generate a personal access token for the user
+            $token = $user->createToken(Auth::getDefaultDriver(), [Auth::getDefaultDriver()])->accessToken;
+
+            // Clear the session data
+            Session::forget('otp');
+            Session::forget('phone_number');
+
+            // Return success response with the user and the token
+            return response()->json([
+                'success' => true,
+                'message' => 'OTP validation successful',
+                'user' => $user,
+                'token' => $token,
+            ]);
+        } else {
+            // OTP validation failed
+            return response()->json([
+                'success' => false,
+                'message' => 'OTP validation failed',
+            ]);
+        }
+    }
+
+    public function completeRegistration(Request $request)
+    {
+        // Validate the input data
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        // If validation fails, return error response
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Registration failed',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        // Generate a 10-digit alphanumeric special ID
+        $specialId = Str::random(10);
+
+        // Get the authenticated user
+        $user = TeamUser::find(Auth::getDefaultDriver() == 'team-user' ? Auth::guard(Auth::getDefaultDriver())->user()->team_owner_user_id : Auth::guard(Auth::getDefaultDriver())->user()->id);
+
+        // Update the user details
+        $user->name = $request->name;
+        $user->email = $request->email;
+        // Assign the special ID to the user's special_id attribute
+        $user->special_id = $specialId;
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Create Default Series Number
+        $panelSeriesNumberController = new PanelSeriesNumberController;
+
+        $currentFinancialYearStart = now()->startOfYear()->month(4)->day(1);
+        $nextFinancialYearEnd = now()->startOfYear()->addYear(1)->subDay();
+        $combinations = [
+            ['panel_id' => 1, 'section_id' => 1],
+            ['panel_id' => 2, 'section_id' => 1],
+            ['panel_id' => 3, 'section_id' => 2],
+            ['panel_id' => 4, 'section_id' => 2],
+        ];
+
+        foreach ($combinations as $combination) {
+            $panelSeriesData = [
+                'series_number' => substr($user->name, 0, 4) . Str::random(4),
+                'panel_id' => $combination['panel_id'],
+                'section_id' => $combination['section_id'],
+                'status' => 'active',
+                'valid_from' => $currentFinancialYearStart,
+                'valid_till' => $nextFinancialYearEnd,
+                'default' => '1',
+            ];
+
+            $panelSeriesRequest = new Request($panelSeriesData);
+            $panelSeriesResponse = $panelSeriesNumberController->store($panelSeriesRequest);
+        }
+
+        // Create Order
+        $ordeController = new OrdersController;
+        $planCombinations = [
+            ['plan_ids' => 3,],
+            ['plan_ids' => 11,],
+            ['plan_ids' => 12,],
+            ['plan_ids' => 13,],
+        ];
+
+        foreach ($planCombinations as $planCombination) {
+            $orderData = [
+                'user_id' => $user->id,
+                'plan_ids' => $planCombination,
+            ];
+
+            $orderRequest = new Request($orderData);
+            $orderResponse = $ordeController->store($orderRequest);
+        }
+        // Return success response with the updated user and the token
+        return response()->json([
+            'success' => true,
+            'message' => 'Registration successful',
+            'user' => $user,
+        ]);
+    }
+
+    public function sendOTPForLogin(Request $request)
+    {
+        // Validate the input email or phone number
+        $validator = Validator::make($request->all(), [
+            'email_or_phone' => 'required',
+        ]);
+
+        // If validation fails, return error response
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid email or phone number',
+                'errors' => $validator->errors(),
+            ], 200);
+        }
+
+        // Check if the email or phone number exists in the user records
+        $user = TeamUser::where('email', $request->email_or_phone)
+            ->orWhere('phone', $request->email_or_phone)
+            ->first();
+        // dd($user);
+        // If the user does not exist, return error response
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User does not exist',
+            ], 500);
+        }
+
+        // Generate OTP
+        $otp = mt_rand(1000, 9999);
+
+        // Store OTP in the database
+        // Check if the phone number exists in the OTP records
+        $existingOTP = Otp::where('phone_number', $request->email_or_phone)->first();
+
+        if ($existingOTP) {
+            // Update the existing OTP record with the new OTP and expiry time
+            $existingOTP->otp = Hash::make($otp);
+            $existingOTP->expires_at = now()->addMinutes(5);
+            $existingOTP->save();
+        } else {
+            // Create a new OTP record if the phone number does not exist
+            $otpModel = Otp::create([
+                'phone_number' => $request->email_or_phone,
+                'otp' => Hash::make($otp),
+                'expires_at' => now()->addMinutes(5)
+            ]);
+        }
+
+        // Send the OTP to the user's email
+        try {
+            Mail::to($user->email)->send(new OtpMail($otp));
+        } catch (\Throwable $exception) {
+            // Log the exception
+            Log::channel('emaillog')->error($exception->getMessage());
+
+            // You can also handle the exception in other ways, such as sending a notification or taking appropriate action
+        }
+
+        // Send the OTP to the user's phone number
+        $apiKey = urlencode('etVEU+y8WgE-lNrXaKDbdAjborAW26zsIxf9brZrLO');
+        $numbers = [$user->phone];
+        $sender = urlencode('TPARCH');
+        $message = "{$otp} is your OTP for login to www.theparchi.com. This OTP will expire within 2 mins.";
+
+        try {
+
+
+            // Prepare data for POST request
+            $data = array('apikey' => $apiKey, 'numbers' => $numbers, "sender" => $sender, "message" => $message);
+
+            // Send OTP via Textlocal SMS API
+            $ch = curl_init('https://api.textlocal.in/send/');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $smsresponse = curl_exec($ch);
+            $status = curl_getinfo($ch, CURLINFO_HTTP_CODE); // Get the HTTP status code
+            curl_close($ch);
+
+            if ($status === 200) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'OTP sent successfully',
+                    'phone' => $user->phone
+                ]);
+            } else {
+                // Log the error response
+                Log::channel('otplog')->error($status);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to send OTP',
+                ], 500);
+            }
+        } catch (\Throwable $exception) {
+            // Log the exception
+            Log::channel('otplog')->error($exception->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send OTP',
+            ], 500);
+        }
+    }
+
+    public function validateOTPForLogin(Request $request)
+    {
+        // Validate the input OTP
+        $validator = Validator::make($request->all(), [
+            'phone_number' => 'required|numeric',
+            'otp' => 'required|numeric',
+        ]);
+
+        // If validation fails, return error response
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid OTP',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        // Retrieve the OTP record from the database
+        $storedOTP = Otp::where('phone_number', $request->phone_number)->first();
+
+        // Verify the provided OTP against the stored OTP
+        if ($storedOTP && Hash::check($request->otp, $storedOTP->otp)) {
+            // Generate authentication token or session for the user
+            $user = TeamUser::where('phone', $storedOTP->phone_number)->first();
+            Auth::login($user);
+
+            $token = $user->createToken(Auth::getDefaultDriver(), [Auth::getDefaultDriver()])->accessToken;
+            $storedOTP->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'OTP validation successful',
+                'token' => $token,
+                'user' => $user,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid OTP',
+        ], 401);
+    }
+
+    public function register(Request $request)
+    {
+
+        // try {
+        //     DB::beginTransaction();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'phone' => 'required',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        // Determine if the input is an email or phone number
+        $field = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
+        $credentials = [
+            $field => $request->email,
+            'password' => $request->password,
+        ];
+
+        if (Auth::guard(Auth::getDefaultDriver())->attempt($credentials)) {
+            // Authentication successful, generate token or session
+            $user = Auth::guard(Auth::getDefaultDriver())->user();
+            $token = $user->createToken(Auth::getDefaultDriver(), [Auth::getDefaultDriver()])->accessToken;
+            // Return success response with user details and token
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'user' => $user,
+                'token' => $token,
+            ]);
+        }
+
+
+        // If validation fails, return error response
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation Error',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        // Generate a 10-digit alphanumeric special ID
+        $specialId = Str::random(10);
+
+        // Assign the special ID to the user's special_id attribute
+        $user = TeamUser::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'special_id' => $specialId,
+            'password' => Hash::make($request->password),
+        ]);
+        // dd($user);
+        if (Auth::guard(Auth::getDefaultDriver())->attempt($credentials)) {
+            // Authentication successful, generate token or session
+            $user = Auth::guard(Auth::getDefaultDriver())->user();
+            $token = $user->createToken(Auth::getDefaultDriver(), [Auth::getDefaultDriver()])->accessToken;
+            // Return success response with user details and token
+            // return response()->json([
+            //     'success' => true,
+            //     'message' => 'Login successful',
+            //     'user' => $user,
+            //     'token' => $token,
+            // ]);
+        }
+        // Create Default Series Number
+        $panelSeriesNumberController = new PanelSeriesNumberController;
+
+        $currentFinancialYearStart = now()->startOfYear()->month(4)->day(1);
+        $nextFinancialYearEnd = now()->startOfYear()->addYear(1)->subDay();
+        $combinations = [
+            ['panel_id' => 1, 'section_id' => 1],
+            ['panel_id' => 2, 'section_id' => 1],
+            ['panel_id' => 3, 'section_id' => 2],
+            ['panel_id' => 4, 'section_id' => 2],
+        ];
+
+        foreach ($combinations as $combination) {
+            $panelSeriesData = [
+                'series_number' => substr($user->name, 0, 4) . Str::random(4),
+                'panel_id' => $combination['panel_id'],
+                'section_id' => $combination['section_id'],
+                'status' => 'active',
+                'valid_from' => $currentFinancialYearStart,
+                'valid_till' => $nextFinancialYearEnd,
+                'default' => '1',
+            ];
+
+            $panelSeriesRequest = new Request($panelSeriesData);
+            $panelSeriesResponse = $panelSeriesNumberController->store($panelSeriesRequest);
+        }
+
+        // Create Order
+        $ordeController = new OrdersController;
+        $planCombinations = [
+            ['plan_ids' => 3,],
+            ['plan_ids' => 11,],
+            ['plan_ids' => 12,],
+            ['plan_ids' => 13,],
+        ];
+
+        foreach ($planCombinations as $planCombination) {
+            $orderData = [
+                'user_id' => $user->id,
+                'plan_ids' => $planCombination,
+            ];
+
+            $orderRequest = new Request($orderData);
+            $orderResponse = $ordeController->store($orderRequest);
+        }
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User registered successfully, Pls Login',
+            'user' => $user,
+        ], 200);
+        // } catch (\Exception $e) {
+        //     // Something went wrong, rollback the transaction
+        //     DB::rollback();
+
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'An error occurred while registering the user',
+        //         'error' => $e->getMessage(),
+        //     ], 500);
+        // }
+    }
+
+
+    public function updateSpecialId()
+    {
+        // Get all users with null special_id
+        $usersWithoutSpecialId = TeamUser::whereNull('special_id')->get();
+
+        foreach ($usersWithoutSpecialId as $user) {
+            // Generate a unique special_id
+            do {
+                $specialId = Str::random(10);
+                $existingUser = TeamUser::where('special_id', $specialId)->first();
+            } while ($existingUser);
+
+            // Update the special_id for the user
+            $user->update(['special_id' => $specialId]);
+        }
+
+        return true;
+    }
+
+    public function login(Request $request)
+    {
+        // Validate the input data
+        $validator = Validator::make($request->all(), [
+            'email_or_phone' => 'required',
+            'password' => 'required',
+        ]);
+
+        // If validation fails, return error response
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid input data',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        $input = $request->email_or_phone;
+
+        // Check if the input is a unique_login_id
+        $user = TeamUser::where('unique_login_id', $input)->first();
+
+        if ($user) {
+            // If a user is found with the unique_login_id, use their email for authentication
+            $field = 'email';
+            $value = $user->email;
+        } else {
+            // If not a unique_login_id, determine if it's an email or phone number
+            $field = filter_var($input, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+            $value = $input;
+        }
+
+        // Attempt to authenticate the user
+        $credentials = [
+            $field => $value,
+            'password' => $request->password,
+        ];
+
+        if (!Auth::guard('team-user')->attempt($credentials)) {
+            // Authentication failed
+            return response()->json([
+                'success' => false,
+                'errors' => ['Invalid credentials'],
+            ], 401);
+        }
+
+        // Authentication successful, generate token or session
+        $user = Auth::guard('team-user')->user();
+        $token = $user->createToken('team-user', ['team-user'])->accessToken;
+
+        // Return success response with user details and token
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful',
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
+    public function user_details(Request $request)
+    {
+        $user = Auth::user();
+        $user = Auth::user()->permissions()->get();
+    }
+
+    public function sendResetOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            // 'phone' => 'required',
+        ]);
+
+        $response = Password::sendResetLink($request->only(['email']));
+
+        if ($response === Password::RESET_LINK_SENT) {
+            // Password reset link sent successfully
+            return response()->json([
+                'success' => true,
+                'message' => 'Reset password OTP has been sent successfully',
+            ]);
+        } else {
+            // Failed to send reset link
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send reset password OTP',
+            ], 400);
+        }
+    }
+
+    public function validateOtpAndResetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'token' => 'required',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        $response = Password::reset($request->only(['email', 'password', 'password_confirmation', 'token']), function ($user, $password) {
+            $user->forceFill([
+                'password' => Hash::make($password),
+            ])->save();
+        });
+
+        if ($response === Password::PASSWORD_RESET) {
+            // Password reset successful
+            return response()->json([
+                'success' => true,
+                'message' => 'Password has been reset successfully',
+            ]);
+        } else {
+            // Failed to reset password
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to reset password',
+            ], 400);
+        }
+    }
+    public function user_logout(Request $request): Response
+    {
+        // dd(Auth::getDefaultDriver(), Auth::guard(Auth::getDefaultDriver())->user()->tokens()->where('name', Auth::getDefaultDriver())->get(), Auth::guard(Auth::getDefaultDriver())->user()->token());
+        if (Auth::guard(Auth::getDefaultDriver())->user()->tokens()->where('name', Auth::getDefaultDriver())->exists()) {
+            $user = Auth::guard(Auth::getDefaultDriver())->user();
+            DB::table('oauth_access_tokens')
+                ->where([['user_id', $user->id], ['name', Auth::getDefaultDriver()]])
+                ->delete();
+            // $user->revoke();
+            Auth::guard(Auth::getDefaultDriver())->logout();
+            // dd(Auth::guard(Auth::getDefaultDriver())->user()->tokens()->where('name', Auth::getDefaultDriver())->delete());
+            return Response()->json(['success' => true, 'data' => 'Unauthorized', 'message' => 'User logout successfully.'], 200);
+        }
+        return response()->json([
+            'success' => false,
+            'status' => 401,
+            'message' => 'Unauthorized',
+        ], 401);
+    }
+}

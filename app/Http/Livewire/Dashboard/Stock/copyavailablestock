@@ -1,0 +1,877 @@
+<?php
+
+namespace App\Http\Livewire\Dashboard\Stock;
+
+use Livewire\Component;
+use App\Models\Product;
+use Illuminate\Http\Request;
+use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\V1\User\Auth\UserAuthController;
+use App\Http\Controllers\V1\Products\ProductController;
+use App\Http\Controllers\V1\PanelColumns\PanelColumnsController;
+
+class AvailableStock extends Component
+{
+    protected $paginationTheme = 'tailwind';
+    public $data;
+    public $show = false;
+    protected $listeners = [
+        'deleteSelectedItems' => 'deleteSelectedItems',
+        'deleteProduct' => 'deleteProduct',
+        'itemsDeleted' => '$refresh',
+        'moveStock' => 'moveStock',
+        'moveCategoryAndWarehouseTriggered' => 'moveCategoryAndWarehouse',
+        'showModal' => 'showModal',
+        'quantitiesUpdated' => 'handleQuantitiesUpdated',
+        'editStock' => 'editProduct',
+    ];
+
+    use WithPagination;
+    public  $articles = [], $articleSearch = [], $locations = [], $categories = [], $warehouse = [], $item_codes = [],   $Article, $location, $item_code, $category;
+    public $errorMessage, $successMessage, $statusCode, $InvoiceColumnDisplayNames;
+    public $article, $from, $to;
+     // Edit Product
+     public $editChallanRequest = array(
+        'unit' => null,
+        'rate' => null,
+        'qty' => null,
+        'tax' => null,
+        'with_tax' => false,
+        'total_amount' => null,
+        'item_code' => null,
+        'columns' => [
+            [
+                'column_name' => '',
+                'column_value' => '',
+            ]
+        ],
+    );
+
+    public function editStock($id){
+        dd($id);
+    }
+    public function mount()
+    {
+        $request = request();
+        // $this->data = $data;
+        // $this->show = false;
+        $UserResource = new UserAuthController;
+        $response = $UserResource->user_details($request);
+        $response = $response->getData();
+        if ($response->success == "true") {
+            $this->mainUser = json_encode($response->user);
+            // dd($this->mainUser);
+            // $this->successMessage = $response->message;
+            // $this->reset(['errorMessage']);
+        } else {
+            $this->errorMessage = json_encode($response->errors ?? [[$response->message]]);
+        }
+        // $this->ColumnDisplayNames = ['Article', 'HSN', 'Details', 'Category','Warehouse','Locaiton', 'Unit', 'Qty', 'Rate', 'Date', 'Time', 'Action'];
+        $PanelColumnsController = new PanelColumnsController;
+
+        $request->merge([
+            'feature_id' => 1,
+            // Auth::guard(Auth::getDefaultDriver())->user()->id
+            'user_id' => Auth::getDefaultDriver() == 'team-user' ? Auth::guard(Auth::getDefaultDriver())->user()->team_owner_user_id : Auth::guard(Auth::getDefaultDriver())->user()->id,
+        ]);
+        $columnsResponse = $PanelColumnsController->index($request);
+        $columnsData = json_decode($columnsResponse->content(), true);
+
+        $filteredColumns = array_filter($columnsData['data'], function ($column) {
+            return $column['feature_id'] == 1;
+        });
+        $panelColumnDisplayNames = array_map(function ($column) {
+            return $column['panel_column_display_name'];
+        }, $filteredColumns);
+        $this->panelColumnDisplayNames = $panelColumnDisplayNames;
+
+
+        $request->merge([
+            'feature_id' => 1,
+            'user_id' => Auth::getDefaultDriver() == 'team-user' ? Auth::guard(Auth::getDefaultDriver())->user()->team_owner_user_id : Auth::guard(Auth::getDefaultDriver())->user()->id,
+        ]);
+        $columnsUserResponse = $PanelColumnsController->index($request);
+        $columnsUserData = json_decode($columnsUserResponse->content(), true);
+
+        $filteredUserColumns = array_filter($columnsUserData['data'], function ($column) {
+            return $column['feature_id'] == 1;
+        });
+        $panelUserColumnDisplayNames = array_map(function ($column) {
+            return $column['panel_column_display_name'];
+        }, $filteredUserColumns);
+
+        $this->panelUserColumnDisplayNames = $panelUserColumnDisplayNames;
+
+        // Add from stock modal data
+        $request = request();
+        $columnFilterDataset = [
+            'feature_id' => 1,
+            'user_id' => Auth::getDefaultDriver() == 'team-user' ? Auth::guard(Auth::getDefaultDriver())->user()->team_owner_user_id : Auth::guard(Auth::getDefaultDriver())->user()->id,
+
+        ];
+        $request->merge($columnFilterDataset);
+        $PanelColumnsController = new PanelColumnsController;
+        $columnsResponse = $PanelColumnsController->index($request);
+        $columnsData = json_decode($columnsResponse->content(), true);
+        $ColumnDisplayNames = array_map(function ($column) {
+            return $column['panel_column_display_name'];
+        }, $columnsData['data']);
+
+        $this->ColumnDisplayNames = $ColumnDisplayNames;
+        $columnFilterDataset = [
+            'feature_id' => 12,
+            'user_id' => Auth::getDefaultDriver() == 'team-user' ? Auth::guard(Auth::getDefaultDriver())->user()->team_owner_user_id : Auth::guard(Auth::getDefaultDriver())->user()->id,
+
+        ];
+        $request->merge($columnFilterDataset);
+        $PanelColumnsController = new PanelColumnsController;
+        $columnsResponse = $PanelColumnsController->index($request);
+        $columnsData = json_decode($columnsResponse->content(), true);
+        $ColumnDisplayNames = array_map(function ($column) {
+            return $column['panel_column_display_name'];
+        }, $columnsData['data']);
+        $this->InvoiceColumnDisplayNames = $ColumnDisplayNames;
+        // Slice the array to get columns from index 3 to 6
+        $this->InvoiceColumnDisplayNames = array_slice($this->InvoiceColumnDisplayNames, 3, 4);
+
+    // Fetch all unique categories
+    $this->allCategories = Product::query()
+        ->select('category')
+        ->distinct()
+        ->whereNotNull('category')
+        ->pluck('category')
+        ->toArray();
+
+    // Fetch all unique item codes
+    $this->allItemCodes = Product::query()
+        ->select('item_code')
+        ->distinct()
+        ->whereNotNull('item_code')
+        ->pluck('item_code')
+        ->toArray();
+
+    // Fetch all unique articles
+    // $this->allArticles = Product::query()
+    //     ->select('details.0.column_value as article')
+    //     ->distinct()
+    //     ->whereNotNull('details.0.column_value')
+    //     ->pluck('article')
+    //     ->toArray();
+        }
+
+        // protected $listeners = ['showModal' => 'showModal'];
+
+
+
+        public function showModal($data) {
+            $this->data = $data;
+
+            $this->doShow();
+        }
+
+        public function doShow() {
+            $this->show = true;
+        }
+
+        public function doClose() {
+            $this->show = false;
+        }
+
+        public function doSomething() {
+            // Do Something With Your Modal
+
+            // Close Modal After Logic
+            $this->doClose();
+        }
+
+    public $openSearchModal = false;
+    public $singleModalopen = false;
+    public $searchModalHeading;
+    public $searchModalButtonText;
+    public $searchModalAction;
+    public $selectedIds = [];
+    public function moveStock($id)
+    {
+        // dd( $id);
+        $this->reset(['successMessage', 'errorMessage']);
+        $this->openSearchModal = true;
+        $this->selectedIds = $id;
+        // dd($this->selectedIds);
+        $this->searchModalHeading = 'Move Stock';
+        $this->searchModalButtonText = 'Confirm';
+        $this->searchModalAction = 'moveStockConfirm';
+    }
+    // Modal Close
+
+    public function closeModal()
+    {
+        $this->openSearchModal = false;
+        $this->singleStockModal = false;
+        $this->reset(['statusCode', 'errorMessage', 'moveCategories', 'moveWarehouses', 'quantityOption', 'allQty', 'newQty']);
+    }
+
+
+    public $moveCategories, $moveWarehouses, $moveLocations, $quantityOption, $allQty, $newQty;
+    public $newQuantitiesWithIds = [];
+
+    public function handleQuantitiesUpdated($quantitiesWithIds)
+    {
+        // dd($quantitiesWithIds);
+        $this->newQuantitiesWithIds = $quantitiesWithIds;
+
+    }
+
+    // Move Stock Confirm
+    public function moveCategoryAndWarehouse()
+    {
+        // dd($this->newQuantitiesWithIds, 'asf') ;
+        $request = request();
+        // Determine which quantity option is selected
+        $quantityOption = $this->quantityOption;
+
+        // Filter out null values from the data
+        $data = array_filter([
+            'selectedIds' => $this->selectedIds,
+            'moveCategories' => $this->moveCategories,
+            'moveWarehouses' => $this->moveWarehouses,
+            'moveLocations' => $this->moveLocations,
+        ], function ($value) {
+            return !is_null($value);
+        });
+
+        // Merge the filtered data into the request
+        $request->merge($data);
+        // dd($request);
+
+        if($quantityOption == 'all') {
+
+        $products = new ProductController;
+        $response = $products->moveCategoryAndWarehouse($request);
+        $result = $response->getData();
+
+        $this->statusCode = $result->status_code;
+        if ($result->status_code === 200) {
+            $this->openSearchModal = false;
+            $this->emit('redirectToStock', $result->message);
+            session()->flash('message', $result->message);
+            $this->reset(['statusCode', 'errorMessage', 'moveCategories', 'moveWarehouses']);
+        } else {
+            $this->errorMessage = json_encode((array) $result->errors);
+        }
+    } else {
+
+        foreach($this->newQuantitiesWithIds as $index => $quantity) {
+            $product = Product::with('details')->find($quantity['product_id']);
+            // dd($product);
+            if ($product) {
+                // Reduce the original product's quantity
+                $product->qty -= $quantity['quantity'];
+                $product->save();
+                $existingItemCodes = Product::where('item_code', 'LIKE', $product->item_code . '-%')
+                            ->pluck('item_code')
+                            ->toArray();
+
+                // Generate a new unique item_code
+                $suffix = 65; // ASCII for 'A'
+                do {
+                    $newItemCode = $product->item_code . '-' . chr($suffix);
+                    $suffix++;
+                } while (in_array($newItemCode, $existingItemCodes));
+
+                // Create new product entry
+                $newProduct = $product->replicate();
+                $newProduct->item_code = $newItemCode;
+                $newProduct->qty = $quantity['quantity'];
+                 // Check for moveCategories and moveWarehouses in the request
+                if (request()->has('moveCategories')) {
+                    $newProduct->category = request()->input('moveCategories');
+                }
+                if (request()->has('moveWarehouses')) {
+                    $newProduct->warehouse = request()->input('moveWarehouses');
+                }
+                $newProduct->save();
+
+                // Optionally, replicate related details if needed
+                foreach ($product->details as $detail) {
+                    $newDetail = $detail->replicate();
+                    $newDetail->product_id = $newProduct->id;
+                    $newDetail->save();
+                }
+            }
+        }
+        $this->openSearchModal = false;
+        $this->emit('redirectToStock', 'Stock moved successfully.');
+        session()->flash('message', 'Stock moved successfully.');
+        $this->reset(['statusCode', 'errorMessage', 'moveCategories', 'moveWarehouses']);
+    }
+    }
+
+    public $singleStockMoveData, $moveQty, $singleStockModal = false;
+    // Single Stock move
+    public function singleStockMove($seriesData)
+    {
+        // dd($seriesData);
+        $this->singleStockModal = true;
+        $seriesData = json_decode($seriesData);
+        $this->singleStockMoveData = (array)$seriesData;
+
+    }
+
+    public function singleStockMoveConfirm()
+    {
+        // Extract data
+        $singleStockMoveData = $this->singleStockMoveData;
+        $moveQty = $this->moveQty;
+        $newCategory = $this->moveCategories;
+        $newWarehouse = $this->moveWarehouses;
+        $newLocation = $this->moveLocations;
+
+        // First Case: No quantity change, only category and warehouse are new
+        if (empty($moveQty)) {
+            // Update original data with new category and warehouse
+            $singleStockMoveData['category'] = $newCategory;
+            $singleStockMoveData['warehouse'] = $newWarehouse;
+
+            // Save the updated data
+            Product::where('id', $singleStockMoveData['id'])->update([
+                'category' => $newCategory,
+                'warehouse' => $newWarehouse,
+                'location' => $newLocation,
+            ]);
+            $this->singleStockModal = false;
+            session()->flash('message', 'Stock updated successfully.');
+        }
+        // Second Case: Quantity is present
+        else {
+           // Create a new entry with the new quantity stock
+        $newStockData = $singleStockMoveData;
+
+        $newStockData['qty'] = $moveQty;
+        $newStockData['category'] = $newCategory;
+        $newStockData['warehouse'] = $newWarehouse;
+
+        // Remove the ID to create a new record
+        unset($newStockData['id']);
+
+        // Generate a new unique item_code
+        $existingItemCodes = Product::where('item_code', 'LIKE', $singleStockMoveData['item_code'] . '-%')
+                                    ->pluck('item_code')
+                                    ->toArray();
+
+        $suffix = 65; // ASCII for 'A'
+        do {
+            $newItemCode = $singleStockMoveData['item_code'] . '-' . chr($suffix);
+            $suffix++;
+        } while (in_array($newItemCode, $existingItemCodes));
+
+        $newStockData['item_code'] = $newItemCode;
+
+        // Save the new stock entry
+        $newProduct = Product::create($newStockData);
+        // Retrieve the original product details
+        $originalProduct = Product::with('details')->find($singleStockMoveData['id']);
+        $details = $originalProduct->details;
+
+        // Copy related ProductDetail records
+        foreach ($details as $detail) {
+            $newDetail = $detail->replicate();
+            $newDetail->product_id = $newProduct->id;
+            $newDetail->save();
+        }
+
+        // Update the old quantity by reducing the difference
+        $remainingQty = $singleStockMoveData['qty'] - $moveQty;
+        Product::where('id', $singleStockMoveData['id'])->update([
+            'qty' => $remainingQty,
+        ]);
+
+        $this->singleStockModal = false;
+        session()->flash('message', 'Stock moved successfully.');
+        }
+
+        // Optionally, you can reset the form fields or perform other actions
+        $this->reset(['moveQty', 'moveCategories', 'moveWarehouses']);
+    }
+
+    // BULK DELETE
+    public function deleteSelectedItems($selectedIds)
+    {
+        // dd($selectedIds);
+        $this->reset(['successMessage', 'errorMessage']);
+        // Proceed with your deletion logic
+        $products = new ProductController;
+        $response = $products->bulkDestroy($selectedIds);
+        $result = $response->getData();
+
+        // Handle the response and update component data accordingly
+        $this->statusCode = $result->status_code;
+        if ($result->status_code === 200) {
+            $this->successMessage = $result->message;
+
+        } else {
+            $this->errorMessage = json_encode((array) $result->errors);
+        }
+    }
+    public function closeSingleStockMove()
+    {
+        $this->singleStockModal = false;
+    }
+
+    public function updateVariable($variable, $value)
+    {
+        // dd($variable, $value);
+            // Add from and to dates to the request
+        $request = request();
+        // $request->merge([
+        //     'from' => $this->from ?? null,
+        //     'to' => $this->to ?? null,
+        // ]);
+
+        $this->{$variable} = $value;
+        // dd($this->{$variable}, $variable, $value);
+    }
+
+    // Method to reset all filters
+    public function resetFilters()
+        {
+            $this->reset(['Article', 'item_code', 'warehouse', 'location', 'category', 'from', 'to']);
+        }
+
+    // Computed property to check if any filter is applied
+    public function getHasFiltersProperty()
+    {
+        return !empty($this->Article) || !empty($this->item_code) || !empty($this->warehouse) || !empty($this->location) || !empty($this->category) || !empty($this->from) || !empty($this->to);
+    }
+
+    public function updatedPage()
+    {
+        $this->dispatchBrowserEvent('page-updated', ['ids' => $this->getProductIds()]);
+    }
+
+    private function getProductIds()
+    {
+        return Product::paginate(10, ['*'], 'page', $this->page)->pluck('id');
+    }
+    public function editProduct(Request $request)
+    {
+        $this->reset(['successMessage']);
+        $request->merge($this->editChallanRequest);
+        // dd($request);
+        $product = new ProductController;
+        $response = $product->update($request, $request->id);
+        $result = $response->getData();
+        // dd($result);
+        $this->statusCode = $result->status_code;
+        if ($result->status_code === 200) {
+            $this->successMessage = $result->message;
+            $this->reset(['statusCode', 'errorMessage', 'editChallanRequest',]);
+            // $this->fetchProduct();
+        } else {
+            $this->errorMessage = json_encode((array) $result->errors);
+        }
+    }
+
+    public function deleteProduct($id)
+    {
+        // dd($id);
+        $product = Product::find($id);
+        if ($product) {
+            $product->delete(); // This will set the deleted_at column instead of permanently deleting the record
+        }
+    }
+
+    public function selectChallanSeries($seriesData)
+    {
+        // dd($seriesData);
+        $seriesData = json_decode($seriesData);
+        $this->reset(['editChallanRequest']);
+        $this->editChallanRequest = (array)$seriesData;
+        // dd($this->editChallanRequest);
+
+    }
+
+    public function resetChallanSeries()
+    {
+        $this->reset(['editChallanRequest']);
+    }
+
+    public $selectedLocations = [];
+    public $allLocations = [];
+    public $selectedWarehouses = [];
+    public $allWarehouses = [];
+    public $selectedCategories = [];
+    public $allCategories = [];
+    public $selectedItemCodes = [];
+    public $allItemCodes = [];
+    public $selectedArticles = [];
+    public $allArticles = [];
+
+    public function clearLocations()
+    {
+        $this->selectedLocations = [];
+    }
+    public function clearWarehouses()
+    {
+        $this->selectedWarehouses = [];
+    }
+    public function clearCategories()
+    {
+        $this->selectedCategories = [];
+    }
+    public function clearItemCode()
+    {
+        $this->selectedItemCodes = [];
+    }
+    public function clearArticles()
+    {
+        $this->selectedArticles = [];
+    }
+    public $availableWarehouses = [];
+
+
+    // public function render()
+    // {
+    //     $userId = Auth::getDefaultDriver() == 'team-user' ? Auth::guard(Auth::getDefaultDriver())->user()->team_owner_user_id : Auth::guard(Auth::getDefaultDriver())->user()->id;
+
+    //     // Main query with all filters applied
+    //     $query = Product::query()->with('details')->withoutTrashed();
+    //     $query->where('user_id', $userId);
+    //     $query->where('qty', '!=', 0);
+
+    //     if (!empty($this->selectedArticles)) {
+    //         $query->whereHas('details', function ($q) {
+    //             $q->where('column_value', $this->selectedArticles);
+    //         });
+    //     }
+    //     if (!empty($this->selectedItemCodes)) {
+    //         $query->whereIn('item_code', $this->selectedItemCodes);
+    //     }
+    //     if (!empty($this->selectedLocations)) {
+    //         $query->whereIn('location', $this->selectedLocations);
+    //     }
+    //     if (!empty($this->selectedCategories)) {
+    //         $query->whereIn('category', $this->selectedCategories);
+    //     }
+    //     if (!empty($this->selectedWarehouses)) {
+    //         $query->whereIn('warehouse', $this->selectedWarehouses);
+    //     }
+
+    //     // Fetch filtered results
+    //     $products = $query->get();
+
+    //     // Query without warehouse filter to fetch unique values for dropdowns
+    //     $queryWithoutWarehouseFilter = Product::query()->with('details')->withoutTrashed();
+    //     $queryWithoutWarehouseFilter->where('user_id', $userId);
+    //     $queryWithoutWarehouseFilter->where('qty', '!=', 0);
+
+    //     if (!empty($this->selectedArticles)) {
+    //         $queryWithoutWarehouseFilter->whereHas('details', function ($q) {
+    //             $q->where('column_value', $this->selectedArticles);
+    //         });
+    //     }
+    //     if (!empty($this->selectedItemCodes)) {
+    //         $queryWithoutWarehouseFilter->whereIn('item_code', $this->selectedItemCodes);
+    //     }
+    //     if (!empty($this->selectedLocations)) {
+    //         $queryWithoutWarehouseFilter->whereIn('location', $this->selectedLocations);
+    //     }
+    //     if (!empty($this->selectedCategories)) {
+    //         $queryWithoutWarehouseFilter->whereIn('category', $this->selectedCategories);
+    //     }
+
+    //     // Fetch results without warehouse filter
+    //     $productsWithoutWarehouseFilter = $queryWithoutWarehouseFilter->get();
+
+    //     // Query without location filter to fetch unique values for dropdowns
+    //     $queryWithoutLocationFilter = Product::query()->with('details')->withoutTrashed();
+    //     $queryWithoutLocationFilter->where('user_id', $userId);
+    //     $queryWithoutLocationFilter->where('qty', '!=', 0);
+
+    //     if (!empty($this->selectedArticles)) {
+    //         $queryWithoutLocationFilter->whereHas('details', function ($q) {
+    //             $q->where('column_value', $this->selectedArticles);
+    //         });
+    //     }
+    //     if (!empty($this->selectedItemCodes)) {
+    //         $queryWithoutLocationFilter->whereIn('item_code', $this->selectedItemCodes);
+    //     }
+    //     if (!empty($this->selectedWarehouses)) {
+    //         $queryWithoutLocationFilter->whereIn('warehouse', $this->selectedWarehouses);
+    //     }
+    //     if (!empty($this->selectedCategories)) {
+    //         $queryWithoutLocationFilter->whereIn('category', $this->selectedCategories);
+    //     }
+
+    //     // Fetch results without location filter
+    //     $productsWithoutLocationFilter = $queryWithoutLocationFilter->get();
+
+    //     // Query without article filter to fetch unique values for dropdowns
+    //     $queryWithoutArticleFilter = Product::query()->with('details')->withoutTrashed();
+    //     $queryWithoutArticleFilter->where('user_id', $userId);
+    //     $queryWithoutArticleFilter->where('qty', '!=', 0);
+
+    //     if (!empty($this->selectedItemCodes)) {
+    //         $queryWithoutArticleFilter->whereIn('item_code', $this->selectedItemCodes);
+    //     }
+    //     if (!empty($this->selectedLocations)) {
+    //         $queryWithoutArticleFilter->whereIn('location', $this->selectedLocations);
+    //     }
+    //     if (!empty($this->selectedWarehouses)) {
+    //         $queryWithoutArticleFilter->whereIn('warehouse', $this->selectedWarehouses);
+    //     }
+    //     if (!empty($this->selectedCategories)) {
+    //         $queryWithoutArticleFilter->whereIn('category', $this->selectedCategories);
+    //     }
+
+    //     // Fetch results without article filter
+    //     $productsWithoutArticleFilter = $queryWithoutArticleFilter->get();
+
+    //     // Query without item code filter to fetch unique values for dropdowns
+    //     $queryWithoutItemCodeFilter = Product::query()->with('details')->withoutTrashed();
+    //     $queryWithoutItemCodeFilter->where('user_id', $userId);
+    //     $queryWithoutItemCodeFilter->where('qty', '!=', 0);
+
+    //     if (!empty($this->selectedArticles)) {
+    //         $queryWithoutItemCodeFilter->whereHas('details', function ($q) {
+    //             $q->where('column_value', $this->selectedArticles);
+    //         });
+    //     }
+    //     if (!empty($this->selectedLocations)) {
+    //         $queryWithoutItemCodeFilter->whereIn('location', $this->selectedLocations);
+    //     }
+    //     if (!empty($this->selectedWarehouses)) {
+    //         $queryWithoutItemCodeFilter->whereIn('warehouse', $this->selectedWarehouses);
+    //     }
+    //     if (!empty($this->selectedCategories)) {
+    //         $queryWithoutItemCodeFilter->whereIn('category', $this->selectedCategories);
+    //     }
+
+    //     // Fetch results without item code filter
+    //     $productsWithoutItemCodeFilter = $queryWithoutItemCodeFilter->get();
+
+    //     // Query without category filter to fetch unique values for dropdowns
+    //     $queryWithoutCategoryFilter = Product::query()->with('details')->withoutTrashed();
+    //     $queryWithoutCategoryFilter->where('user_id', $userId);
+    //     $queryWithoutCategoryFilter->where('qty', '!=', 0);
+
+    //     if (!empty($this->selectedArticles)) {
+    //         $queryWithoutCategoryFilter->whereHas('details', function ($q) {
+    //             $q->where('column_value', $this->selectedArticles);
+    //         });
+    //     }
+    //     if (!empty($this->selectedItemCodes)) {
+    //         $queryWithoutCategoryFilter->whereIn('item_code', $this->selectedItemCodes);
+    //     }
+    //     if (!empty($this->selectedLocations)) {
+    //         $queryWithoutCategoryFilter->whereIn('location', $this->selectedLocations);
+    //     }
+    //     if (!empty($this->selectedWarehouses)) {
+    //         $queryWithoutCategoryFilter->whereIn('warehouse', $this->selectedWarehouses);
+    //     }
+
+    //     // Fetch results without category filter
+    //     $productsWithoutCategoryFilter = $queryWithoutCategoryFilter->get();
+
+    //     // Combine results to ensure all relevant options are included
+    //     $combinedProducts = $products
+    //         ->merge($productsWithoutWarehouseFilter)
+    //         ->merge($productsWithoutLocationFilter)
+    //         ->merge($productsWithoutArticleFilter)
+    //         ->merge($productsWithoutItemCodeFilter)
+    //         ->merge($productsWithoutCategoryFilter);
+
+    //     // Extract unique values for dropdowns
+    //     $this->allArticles = $combinedProducts->pluck('details.0.column_value')->unique()->filter()->values()->toArray();
+    //     $this->allItemCodes = $combinedProducts->pluck('item_code')->unique()->filter()->values()->toArray();
+    //     $this->allLocations = $combinedProducts->pluck('location')->unique()->filter()->values()->toArray();
+    //     $this->allCategories = $combinedProducts->pluck('category')->unique()->filter()->values()->toArray();
+    //     $this->allWarehouses = $combinedProducts->pluck('warehouse')->unique()->filter()->values()->toArray();
+
+    //     // Fetch paginated results with applied filters
+    //     $paginatedProducts = $query->paginate(50);
+    //     // dd($paginatedProducts);
+    //     return view('livewire.dashboard.stock.available-stock', [
+    //         'products' => $paginatedProducts,
+    //         'columnDisplayNames' => $this->ColumnDisplayNames,
+    //         'InvoiceColumnDisplayNames' => $this->InvoiceColumnDisplayNames,
+    //     ]);
+    // }
+    public function render()
+    {
+        $request = request();
+        // $this->emitSelf('componentUpdated');
+        $userId = Auth::getDefaultDriver() == 'team-user' ? Auth::guard(Auth::getDefaultDriver())->user()->team_owner_user_id : Auth::guard(Auth::getDefaultDriver())->user()->id;
+
+        $filters = [
+            'article' => $this->Article,
+            'item_code' => $this->item_code,
+            'warehouse' => $this->warehouse,
+            'location' => $this->location,
+            'category' => $this->category,
+            'from_date' => $this->from,
+            'to_date' => $this->to,
+        ];
+
+        // Apply filters from the request to the query
+        foreach ($filters as $key => $value) {
+            if ($value !== null) {
+                $request->merge([$key => $value]);
+            }
+        }
+
+
+        $query = Product::query()->with('details')->withoutTrashed();
+
+        // Filter by user_id
+        $query->where('user_id', $userId);
+
+        // Add a where clause to the query to filter out products where qty is not equal to 0
+        $query->where('qty', '!=', 0);
+
+        // Apply filters dynamically
+        if (!empty($this->Article)) {
+            $query->whereHas('details', function ($q) {
+                $q->where('column_value', $this->Article);
+            });
+        }
+        if (!empty($this->item_code)) {
+            $query->where('item_code', $this->item_code);
+        }
+        if (!empty($this->location)) {
+            $query->where('location', $this->location);
+        }
+        if (!empty($this->category)) {
+            $query->where('category', $this->category);
+        }
+        if (!empty($this->warehouse)) {
+            $query->where('warehouse', $this->warehouse);
+        }
+
+        // Fetch filtered results
+        $products = $query->get();
+
+        // Fetch unique values based on the filtered results
+        $this->articles = $products->pluck('details.0.column_value')->unique()->filter()->values()->toArray();
+        $this->item_codes = $products->pluck('item_code')->unique()->filter()->values()->toArray();
+        $this->locations = $products->pluck('location')->unique()->filter()->values()->toArray();
+        $this->categories = $products->pluck('category')->unique()->filter()->values()->toArray();
+        $this->warehouses = $products->pluck('warehouse')->unique()->filter()->values()->toArray();
+
+        // Apply further filters to the paginated results
+        if (!empty($this->item_code)) {
+            $query->where('item_code', $this->item_code);
+        }
+        if (!empty($this->category)) {
+            $query->where('category', $this->category);
+        }
+        if (!empty($this->warehouse)) {
+            $query->where('warehouse', $this->warehouse);
+        }
+        if (!empty($this->location)) {
+            $query->where('location', $this->location);
+        }
+
+        // Fetch paginated results
+        $products = $query->latest()->paginate(50);
+
+
+        return view('livewire.dashboard.stock.available-stock', [
+            'products' => $products,
+            'columnDisplayNames' => $this->ColumnDisplayNames,
+            'InvoiceColumnDisplayNames' => $this->InvoiceColumnDisplayNames,
+        ]);
+    }
+
+
+}
+
+
+
+{{-- <div class="filters">
+    <div>
+        <select wire:model="article" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="">Choose an Article</option>
+            @foreach($articles as $article)
+                <option value="{{ $article }}">{{ $article }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div>
+        <select wire:model="item_code" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="">Choose an Item Code</option>
+            @foreach($item_codes as $item_code)
+                <option value="{{ $item_code }}">{{ $item_code }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div>
+        <select wire:model="location" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="">Choose a Location</option>
+            @foreach($locations as $location)
+                <option value="{{ $location }}">{{ $location }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div>
+        <select wire:model="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="">Choose a Category</option>
+            @foreach($categories as $category)
+                <option value="{{ $category }}">{{ $category }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div>
+        <select wire:model="warehouse" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="">Choose a Warehouse</option>
+            @foreach($warehouses as $warehouse)
+                <option value="{{ $warehouse }}">{{ $warehouse }}</option>
+            @endforeach
+        </select>
+    </div>
+</div> --}}
+
+<div class="filters">
+<div>
+    <select wire:model="article" multiple class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <option value="">Choose an Article</option>
+        @foreach($articles as $article)
+            <option value="{{ $article }}">{{ $article }}</option>
+        @endforeach
+    </select>
+</div>
+<div>
+    <select wire:model="item_code" multiple class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <option value="">Choose an Item Code</option>
+        @foreach($item_codes as $item_code)
+            <option value="{{ $item_code }}">{{ $item_code }}</option>
+        @endforeach
+    </select>
+</div>
+<div>
+    <select wire:model="location" multiple class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <option value="">Choose a Location</option>
+        @foreach($locations as $location)
+            <option value="{{ $location }}">{{ $location }}</option>
+        @endforeach
+    </select>
+</div>
+<div>
+    <select wire:model="category" multiple class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <option value="">Choose a Category</option>
+        @foreach($categories as $category)
+            <option value="{{ $category }}">{{ $category }}</option>
+        @endforeach
+    </select>
+</div>
+<div>
+    <select wire:model="warehouse" multiple class="js-example-basic-multiple bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <option value="">Choose a Warehouse</option>
+        @foreach($warehouses as $warehouse)
+            <option value="{{ $warehouse }}">{{ $warehouse }}</option>
+        @endforeach
+    </select>
+</div>
+</div>

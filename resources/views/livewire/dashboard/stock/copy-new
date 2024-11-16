@@ -1,0 +1,1274 @@
+<div>
+    @if ($errorMessage)
+    <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 8000)" x-show="show" wire:key="error-{{ now() }}" class="p-4 text-xs text-red-800 mb-1 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-400" role="alert">
+        {{ $errorMessage }}
+        @if ($errorData)
+    <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 8000)" x-show="show" wire:key="error-{{ now() }}" class="p-4 text-xs text-red-800 mb-1 rounded-lg bg-red-100 dark:bg-gray-800 dark:text-red-400" role="alert">
+        
+        <ul>
+            @foreach (json_decode($errorData) as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+        </div>
+    @endif
+    @if (session('message')) 
+    <div  x-data="{ show: true }" x-init="setTimeout(() => show = false, 8000)" x-show="show" wire:key="successMessage-{{ now() }}" id="success-alert" class="flex items-center p-2 mb-4 text-green-800 rounded-lg bg-[#d4edda] dark:text-green-400 dark:bg-gray-800 dark:border-green-800" role="alert">
+        <div class="ms-3 text-sm ">
+            <span class="font-medium">Success:</span>  {{ session('message') }}
+        </div> 
+    </div>
+    @endif
+    @if ($successMessage)
+    <div  x-data="{ show: true }" x-init="setTimeout(() => show = false, 8000)" x-show="show" wire:key="successMessage-{{ now() }}" id="success-alert" class="flex items-center p-2 mb-4 text-green-800 rounded-lg bg-[#d4edda] dark:text-green-400 dark:bg-gray-800 dark:border-green-800" role="alert">
+        <div class="ms-3 text-sm ">
+            <span class="font-medium">Success:</span>  {{ $successMessage }}
+        </div> 
+    </div>
+    @endif
+    <div class="flex bg-white dark:bg-gray-900 mb-1 p-3 justify-between" >
+        <div class="flex"> 
+            <h5 class="mr-2" style="align-self: center;">Filter: </h5>
+            
+            <div class="mr-2" x-data="{ search: '', selectedUser: null }"    wire:ignore.self>
+                <!-- Button to toggle dropdown -->
+                <div class="flex border border-gray-900 rounded-lg text-xs">
+                    <button id="dropdownArticleSearch" data-dropdown-toggle="dropdownArticleButton" x-init="$nextTick(() => initDropdown())"
+                        data-dropdown-placement="bottom" data-dropdown-trigger="click"
+                        class="text-black flex w-full   bg-white rounded-lg   px-2 py-1 text-center items-center justify-center  mr-2 "
+                        type="button">
+                        <span x-cloak>Article
+                        
+                        </span>
+                        @if (empty($Article))
+                            <!-- Button content -->
+                            <svg class="w-2 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 10 6">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 1 4 4 4-4" />
+                            </svg>
+                        @endif
+                        <small class="flex text-xs ml-1 font-bold">
+                            @if (!empty($Article))
+                                ({{ $Article }})
+                                <span wire:click="updateVariable('Article', null)"  class="cursor-pointer ml-2">X</span>
+                            @endif
+                        </small>
+                    </button>
+                </div>
+
+                <!-- Dropdown menu -->
+                <div  x-data="{ search: '', updateVariable: null }" id="dropdownArticleButton" wire:ignore.self
+                    class="z-10 hidden bg-white rounded-lg shadow w-100 dark:bg-gray-700">
+                    <!-- Search input -->
+                    <div class="p-3">
+                        <label for="input-group-search" class="sr-only">Search</label>
+                        <div class="relative text-xs">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-black dark:text-gray-400" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="2"
+                                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input x-model="search" type="text" id="input-group-search"
+                                class="block w-full p-2 pl-10 text-xs text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                placeholder="Search user">
+                        </div>
+                    </div>
+                    <input type="hidden" wire:model="article" style="display: none;">
+                    <!-- Filtered list based on search -->
+                    <ul class="h-48 px-1 pb-3 overflow-y-auto text-xs text-gray-700 dark:text-gray-200"
+                        aria-labelledby="dropdownArticleSearch">
+                        <li class="cursor-pointer "
+                            x-show="search === '' || '{{ strtolower(null) }}'.includes(search.toLowerCase())"
+                            wire:click.prevent="updateVariable('Article','{{ null }}')">
+                            <div
+                                class="flex items-center pl-2 rounded  hover:bg-gray-100 cursor-pointer dark:hover:bg-gray-600">
+                                <label
+                                    class="w-full py-2 ml-2 text-xs  text-gray-900 rounded cursor-pointer dark:text-gray-300">All</label>
+                            </div>
+                        </li>
+                        @foreach ($articles as $atcl)
+                            <li class="cursor-pointer"
+                                x-show="search === '' || '{{ strtolower($atcl ?? null) }}'.includes(search.toLowerCase())"
+                                wire:click.prevent="updateVariable('Article','{{ $atcl }}')">
+                                <div
+                                    class="flex items-center pl-2 rounded hover:bg-gray-100 cursor-pointer dark:hover:bg-gray-600">
+                                    <label
+                                        class="w-full py-2 ml-2 text-xs text-xs text-gray-900 rounded cursor-pointer dark:text-gray-300">{{ $atcl ?? null }}</label>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+
+            {{-- ItemCode --}}
+            <div class="mr-2" x-data="{ search: '', selectedUser: null }" wire:ignore.self>
+                <!-- Button to toggle dropdown -->
+                <div class="flex border border-gray-900 rounded-lg text-xs">
+                    <button id="dropdownCodeSearch" data-dropdown-toggle="dropdownItemCodeSearch"
+                        data-dropdown-placement="bottom" data-dropdown-trigger="click"
+                        class="text-black flex w-  whitespace-nowrap bg-white   focus:outline-none   rounded-lg  px-2 py-1 text-center items-center justify-center  mr-2"
+                        type="button">
+                        <span x-cloak>Item Code <small>
+                        
+                            </small></span>
+                        @if (empty($item_code))
+                            <!-- Button content -->
+                            <svg class="w-2 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 10 6">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 1 4 4 4-4" />
+                            </svg>
+                        @endif
+                        <small class="flex text-xs font-bold ml-1">
+                            @if (!empty($item_code))
+                                ({{ $item_code }})
+                                <span wire:click="updateVariable('item_code', null)"  class="cursor-pointer ml-2">X</span>
+                            @endif
+                        </small>
+                    </button>
+                </div>
+
+                <!-- Dropdown menu -->
+                <div x-data="{ search: '', updateVariable: null }" id="dropdownItemCodeSearch" wire:ignore.self
+                    class="z-10 hidden bg-white rounded-lg shadow w-100 dark:bg-gray-700">
+                    <!-- Search input -->
+                    <div class="p-3">
+                        <label for="input-group-search" class="sr-only">Search</label>
+                        <div class="relative text-xs">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-black dark:text-gray-400" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="2"
+                                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input x-model="search" type="text" id="input-group-search"
+                                class="block w-full p-2 pl-10 text-xs text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                placeholder="Search user">
+                        </div>
+                    </div>
+                    <input type="hidden" wire:model="item_code" style="display: none;">
+                    <!-- Filtered list based on search -->
+                    <ul class="h-48 px-3 pb-3 overflow-y-auto text-xs text-gray-700 dark:text-gray-200"
+                        aria-labelledby="dropdownCodeSearch">
+                        <li class="cursor-pointer "
+                            x-show="search === '' || '{{ strtolower(null) }}'.includes(search.toLowerCase())"
+                            wire:click.prevent="updateVariable('item_code','{{ null }}')">
+                            <div
+                                class="flex items-center pl-2 rounded hover:bg-gray-100 cursor-pointer dark:hover:bg-gray-600">
+                                <label
+                                    class="w-full py-2 ml-2 text-xs text-xs text-gray-900 rounded cursor-pointer dark:text-gray-300">All</label>
+                            </div>
+                        </li>
+                        @foreach ($item_codes as $code)
+                            <li class="cursor-pointer"
+                                x-show="search === '' || '{{ strtolower($code ?? null) }}'.includes(search.toLowerCase())"
+                                wire:click.prevent="updateVariable('item_code','{{ $code }}')">
+                                <div
+                                    class="flex items-center pl-2 rounded hover:bg-gray-100 cursor-pointer dark:hover:bg-gray-600">
+                                    <label
+                                        class="w-full py-2 ml-2 text-xs text-xs text-gray-900 rounded cursor-pointer dark:text-gray-300">{{ $code ?? null }}</label>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mr-2" x-data="{ search: '', selectedUser: null }"    wire:ignore.self>
+                <!-- Button to toggle dropdown -->
+                <div class="flex border border-gray-900 rounded-lg text-xs">
+                    <button id="dropdownCategorySearch" data-dropdown-toggle="dropdownCategoryButton" x-init="$nextTick(() => initDropdown())"
+                        data-dropdown-placement="bottom" data-dropdown-trigger="click"
+                        class="text-black flex w-full    bg-white    text-xs rounded-lg   px-2 py-1 text-center items-center justify-center  mr-2   "
+                        type="button">
+                        <span x-cloak>Category
+                        
+                        </span>
+                        @if (empty($category))
+                            <!-- Button content -->
+                            <svg class="w-2 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 10 6">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 1 4 4 4-4" />
+                            </svg>
+                        @endif
+                        <small class="flex text-xs font-bold ml-1">
+                            @if (!empty($category))
+                                ({{ $category }})
+                                <span wire:click="updateVariable('category', null)"  class="cursor-pointer ml-2">X</span>
+                            @endif
+                        </small>
+                    </button>
+                    
+                    
+                </div>
+
+                <!-- Dropdown menu -->
+                <div x-data="{ search: '', updateVariable: null }" id="dropdownCategoryButton" wire:ignore.self
+                    class="z-10 hidden bg-white rounded-lg shadow w-100 dark:bg-gray-700">
+                    <!-- Search input -->
+                    <div class="p-3">
+                        <label for="input-group-search" class="sr-only">Search</label>
+                        <div class="relative text-xs">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-black dark:text-gray-400" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="2"
+                                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input x-model="search" type="text" id="input-group-search"
+                                class="block w-full p-2 pl-10 text-xs text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                placeholder="Search user">
+                        </div>
+                    </div>
+                    <input type="hidden" wire:model="article" style="display: none;">
+                    <!-- Filtered list based on search -->
+                    <ul class="h-48 px-3 pb-3 overflow-y-auto text-xs text-gray-700 dark:text-gray-200"
+                        aria-labelledby="dropdownCategorySearch">
+                        <li class="cursor-pointer "
+                            x-show="search === '' || '{{ strtolower(null) }}'.includes(search.toLowerCase())"
+                            wire:click.prevent="updateVariable('category','{{ null }}')">
+                            <div
+                                class="flex items-center pl-2 rounded  hover:bg-gray-100 cursor-pointer dark:hover:bg-gray-600">
+                                <label
+                                    class="w-full py-2 ml-2 text-xs  text-gray-900 rounded cursor-pointer dark:text-gray-300">All</label>
+                            </div>
+                        </li>
+                        @foreach ($categories as $cat)
+                            <li class="cursor-pointer"
+                                x-show="search === '' || '{{ strtolower($cat ?? null) }}'.includes(search.toLowerCase())"
+                                wire:click.prevent="updateVariable('category','{{ $cat }}')">
+                                <div
+                                    class="flex items-center pl-2 rounded hover:bg-gray-100 cursor-pointer dark:hover:bg-gray-600">
+                                    <label
+                                        class="w-full py-2 ml-2 text-xs text-xs text-gray-900 rounded cursor-pointer dark:text-gray-300">{{ $cat ?? null }}</label>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+            <div class="mr-2" x-data="{ search: '', selectedUser: null }" wire:ignore.self>
+                <!-- Button to toggle dropdown -->
+                <div class="flex border border-gray-900 rounded-lg text-xs">
+                        <button id="dropdownWarehouseSearch" data-dropdown-toggle="dropdownWareSearch"
+                        data-dropdown-placement="bottom" data-dropdown-trigger="click"
+                        class="text-black flex w-full    bg-white    text-xs rounded-lg   px-2 py-1 text-center items-center justify-center  mr-2  "
+                        type="button">
+                        <span x-cloak>Warehouse</span>
+                        <!-- Button content -->
+                        @if (empty($warehouse))
+                        <svg class="w-2 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 10 6">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" d="m1 1 4 4 4-4" />
+                        </svg>
+                        @endif
+                        {{-- onclick="window.location.reload();" --}}
+                        <small class="flex text-xs font-bold ml-1">
+                            @if (!empty($warehouse))
+                                ({{ $warehouse }})
+                                <span wire:click="updateVariable('warehouse', null)"  class="cursor-pointer ml-2">X</span>
+                            @endif
+                        </small>
+                    </button>
+                
+                </div>
+
+                <!-- Dropdown menu -->
+                <div x-data="{ search: '', updateVariable: null }" id="dropdownWareSearch" wire:ignore.self
+                    class="z-10 hidden bg-white rounded-lg shadow w-100 dark:bg-gray-700">
+                    <!-- Search input -->
+                    <div class="p-3">
+                        <label for="input-group-search" class="sr-only">Search</label>
+                        <div class="relative text-xs">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-black dark:text-gray-400" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="2"
+                                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input x-model="search" type="text" id="input-group-search"
+                                class="block w-full p-2 pl-10 text-xs text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                placeholder="Search user">
+                        </div>
+                    </div>
+                    <input type="hidden" wire:model="warehouse" style="display: none;">
+                    <!-- Filtered list based on search -->
+                    <ul class="h-48 px-3 pb-3 overflow-y-auto text-xs text-gray-700 dark:text-gray-200"
+                        aria-labelledby="dropdownLocationSearch" >
+                        <li class="cursor-pointer"
+                            x-show="search === '' || '{{ strtolower(null) }}'.includes(search.toLowerCase())"
+                            wire:click.prevent="updateVariable('warehouse','{{ null }}')">
+                            <div
+                                class="flex items-center pl-2 rounded hover:bg-gray-100 cursor-pointer dark:hover:bg-gray-600">
+                                <label
+                                    class="w-full py-2 ml-2 text-xs text-xs text-gray-900 rounded cursor-pointer dark:text-gray-300">All</label>
+                            </div>
+                        </li>
+                        @foreach ($warehouses as $ware)
+                            <li class="cursor-pointer"
+                                x-show="search === '' || '{{ strtolower($ware ?? null) }}'.includes(search.toLowerCase())"
+                                wire:click.prevent="updateVariable('warehouse','{{ $ware }}')">
+                                <div
+                                    class="flex items-center pl-2 rounded hover:bg-gray-100 cursor-pointer dark:hover:bg-gray-600">
+                                    <label
+                                        class="w-full py-2 ml-2 text-xs text-xs text-gray-900 rounded cursor-pointer dark:text-gray-300">{{ $ware ?? null }}</label>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+            <div class="mr-2" x-data="{ search: '', selectedUser: null }" wire:ignore.self>
+                <div class="flex border border-gray-900 rounded-lg text-xs">
+                    <!-- Button to toggle dropdown -->
+                    <button id="dropdownLocationSearch" data-dropdown-toggle="dropdownLocateSearch"
+                        data-dropdown-placement="bottom" data-dropdown-trigger="click"
+                        class="text-black flex w-full    bg-white    text-xs rounded-lg   px-2 py-1 text-center items-center justify-center  mr-2  "
+                        type="button">
+                        <span x-cloak>Location </span>
+                            @if (empty($location))
+                        <!-- Button content -->
+                        <svg class="w-2 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 10 6">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" d="m1 1 4 4 4-4" />
+                        </svg>
+                        @endif
+
+            
+                    <small class="flex text-xs font-bold ml-1">
+                        @if (!empty($location))
+                            ({{ $location }})
+                            <span wire:click="updateVariable('location', null)"  class="cursor-pointer ml-2">X</span>
+                        @endif
+                    </small>
+                    </button>
+                </div>
+                <!-- Dropdown menu -->
+                <div x-data="{ search: '', updateVariable: null }" id="dropdownLocateSearch" wire:ignore.self
+                    class="z-10 hidden bg-white rounded-lg shadow w-100 dark:bg-gray-700">
+                    <!-- Search input -->
+                    <div class="p-3">
+                        <label for="input-group-search" class="sr-only">Search</label>
+                        <div class="relative text-xs">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-black dark:text-gray-400" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="2"
+                                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input x-model="search" type="text" id="input-group-search"
+                                class="block w-full p-2 pl-10 text-xs text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                placeholder="Search user">
+                        </div>
+                    </div>
+                    <input type="hidden" wire:model="location" style="display: none;">
+                    <!-- Filtered list based on search -->
+                    <ul class="h-48 px-3 pb-3 overflow-y-auto text-xs text-gray-700 dark:text-gray-200"
+                        aria-labelledby="dropdownLocationSearch">
+                        <li class="cursor-pointer"
+                            x-show="search === '' || '{{ strtolower(null) }}'.includes(search.toLowerCase())"
+                            wire:click.prevent="updateVariable('location','{{ null }}')">
+                            <div
+                                class="flex items-center pl-2 rounded hover:bg-gray-100 cursor-pointer dark:hover:bg-gray-600">
+                                <label
+                                    class="w-full py-2 ml-2 text-xs text-xs text-gray-900 rounded cursor-pointer dark:text-gray-300">All</label>
+                            </div>
+                        </li>
+                        @foreach ($locations as $loc)
+                            <li class="cursor-pointer"
+                                x-show="search === '' || '{{ strtolower($loc ?? null) }}'.includes(search.toLowerCase())"
+                                wire:click.prevent="updateVariable('location','{{ $loc }}')">
+                                <div
+                                    class="flex items-center pl-2 rounded hover:bg-gray-100 cursor-pointer dark:hover:bg-gray-600">
+                                    <label
+                                        class="w-full py-2 ml-2 text-xs text-xs text-gray-900 rounded cursor-pointer dark:text-gray-300">{{ $loc ?? null }}</label>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+            </div>
+            {{-- Show when filter is applied --}}
+            <div class="flex" x-show="Article || item_code || category || warehouse || location">
+                <button wire:click="resetFilters" class="btn-danger text-xs text-red-600 shadow-xl hover:underline">Reset All Filters</button>
+            </div>
+            {{-- <button wire:click="resetFilters" class=" btn-danger">Reset All Filters</button> --}}
+     </div>
+        @php
+        $mainUser = json_decode($this->mainUser);
+        @endphp
+         <!-- Trigger Button -->
+     
+        <div x-data="checkboxes()" x-init="initCheckboxes({{ $products->pluck('id') }})" class="min-w-full overflow-auto">
+            <div x-data="{ showModal: false, selectedProduct: null }">
+                <table class="min-w-full divide-y divide-gray-200" x-data="{ showSelected: false }" style="table-layout: fixed;">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="px-1 py-1 text-left text-xs font-medium text-black uppercase tracking-wider">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox" @click="showSelected = !showSelected" x-on:click="toggleAll" x-bind:checked="allChecked">
+                                </label>
+                            </th>
+                            {{-- @dump($ColumnDisplayNames) --}}
+                            @foreach ($ColumnDisplayNames as $index => $columnName)
+                            {{-- @if ($index < 3)
+                            <th x-show="!showSelected" scope="col" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">{{ $columnName }}</th>
+                            @endif --}}
+                            @endforeach
+                            {{-- @if (!in_array('Article', $ColumnDisplayNames))
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">Article</th>
+                            @endif --}}
+            
+                            {{-- @if (!in_array('hsn' || 'Hsn', $ColumnDisplayNames))
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">HSN</th>
+                            @endif --}}
+                            @foreach ($ColumnDisplayNames as $index => $columnName)
+                                @if (!empty($columnName))
+                                    <th x-show="!showSelected" class="va-b px-2 py-2 text-xs border border-gray-300 whitespace-nowrap">
+                                        {{ ucfirst($columnName) }}
+                                    </th>
+                                @endif
+                            @endforeach
+                        
+                        
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">Item Code</th>
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">Category</th>
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">Warehouse</th>
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">Location</th>
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">Unit</th>
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">Quantity</th>
+                            <th data-tooltip-target="tooltip-right" data-tooltip-placement="right" x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300 items-end flex">Price 
+                                {{-- <button data-tooltip-target="tooltip-right" data-tooltip-placement="right" type="button" class="ms-3 mb-2 md:mb-0 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Tooltip right</button> --}}
+                                <svg class="h-3.5 text-gray-800 dark:text-white cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                                </svg>   
+                                <div id="tooltip-right" role="tooltip" class="absolute z-10 text-[0.6rem] invisible inline-block px-3 py-2 text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Inclusive of all taxes
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div> 
+                            </th>
+                            
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">Tax(%)</th>
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">Date</th>
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">Time</th>
+                            <th x-show="!showSelected" class="va-b px-1.5 py-2 text-left text-xs border border-gray-300">Action</th>
+                            <th x-show="selectedCount > 0" class="text-black lowercase text-xs text-left">Selected: <span x-text="selectedCount"></span></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0"></th>
+                            <th x-show="selectedCount > 0" class="text-right">
+                                @if ($mainUser->team_user != null)
+                                @if ($mainUser->team_user->permissions->permission->stock->delete_stock == 1)
+                                <button id="dropdownMenuIconHorizontalButton" data-dropdown-toggle="dropdownDotsHorizontal" class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100   dark:text-white   dark:bg-gray-800 dark:hover:bg-gray-700 " type="button"> 
+                                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 3">
+                                        <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z"/>
+                                    </svg>
+                                </button>
+            
+                                <!-- Dropdown menu -->
+                                <div id="dropdownDotsHorizontal" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600">
+                                    <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconHorizontalButton">
+                                        <li>
+                                            <a href="#" @click="confirmDeletion(selectedProducts)" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                                <svg class="h-6" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 24 24">
+                                                    <path d="M10 2L9 3H3V5H21V3H15L14 2H10ZM4.365 7L6.068 22H17.932L19.635 7H4.365Z"></path>
+                                                </svg>
+                                            </a>
+                                        </li>
+                                        
+                                    </ul>
+                                </div>
+                                @endif
+                                @else
+                                <button id="dropdownMenuIconHorizontalButton" data-dropdown-toggle="dropdownDotsHorizontal" class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none dark:text-white focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-600" type="button"> 
+                                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 3">
+                                        <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z"/>
+                                    </svg>
+                                </button>
+            
+                                <!-- Dropdown menu -->
+                                <div id="dropdownDotsHorizontal" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600">
+                                    <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconHorizontalButton">
+                                        <li>
+                                            <a href="#" @click="confirmDeletion(selectedProducts)" class="block px-8 py-2 font-medium hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                                {{-- <svg class="h-5" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 24 24">
+                                                    <path d="M10 2L9 3H3V5H21V3H15L14 2H10ZM4.365 7L6.068 22H17.932L19.635 7H4.365Z"></path>
+                                                </svg> --}}
+                                                Delete
+                                            </a>
+                                        </li>
+                                        <li class="text-xs font-medium block px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" @click="moveStock(selectedProducts)">MoveStock</li>
+                                    </ul>
+                                </div>
+                                @endif
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($products as $key => $product)
+                        {{-- @dump($InvoiceColumnDisplayNames) --}}
+                        <tr>
+                            <td class="px-1 py-1 whitespace-nowrap">
+                                <input type="checkbox" 
+                                    class="form-checkbox" 
+                                    :checked="selectedProducts.includes({{ $product->id }})"
+                                    @click="toggleProduct({{ $product->id }})">
+                            </td>
+                            @foreach($product->details as $index => $detail)
+                            @php
+                            $detail = (object) $detail;
+                            @endphp
+                                @if (!empty($ColumnDisplayNames[$index]))
+                                    <td class="va-b px-2 py-2 text-xs border border-gray-300">
+                                        @if ($index <= 2)
+                                        {{ \Illuminate\Support\Str::limit(\Illuminate\Support\Str::lower($detail->column_value), 20) }}
+                                        @elseif ($index >= 3 && $index <= 6)
+                                            {{ $detail->column_value}}
+                                        @endif
+                                    </td>
+                                @endif
+                                {{-- @if(!empty($InvoiceColumnDisplayNames[$index]))
+                                    <td class="va-b px-2 py-2 text-xs border border-gray-300">
+                                        @if ($index >= 7 && $index <= 11)
+                                            {{ $detail->column_value}}
+                                        @endif
+                                    </td>
+                                @endif --}}
+                            @endforeach
+                            {{-- @if ($index < 3)
+                                <td class="px-1 py-1 whitespace-nowrap text-[11px] text-gray-800">{{ \Illuminate\Support\Str::limit(\Illuminate\Support\Str::lower($detail->column_value), 20) }}</td>
+                                @endif
+                            @endforeach --}}
+                            
+                            <td class="px-1 py-1 whitespace-nowrap text-[11px] text-gray-800">{{ $product->item_code }}</td>
+                            <td class="px-1 py-1 whitespace-nowrap text-[11px] text-gray-800">{{ $product->category ?? '' }}</td>
+                            <td class="px-1 py-1 whitespace-nowrap text-[11px] text-gray-800">{{ $product->warehouse ?? '' }}</td>
+                            <td class="px-1 py-1 whitespace-nowrap text-[11px] text-gray-800">{{ ucfirst($product->location) }}</td>
+                            <td class="px-1 py-1 whitespace-nowrap text-[11px] text-gray-800">{{ ucfirst($product->unit) }}</td>
+                            <td class="px-1 py-1 whitespace-nowrap text-[11px] text-gray-800">{{ $product->qty }}</td>
+                            <td class="px-1 py-1 whitespace-nowrap text-[11px] text-gray-800">{{ $product->rate }}</td>
+                            <td class="px-1 py-1 whitespace-nowrap text-[11px] text-gray-800">{{ $product->tax }}</td>
+                            <td class="px-1 py-1 whitespace-nowrap text-[11px] text-gray-800">
+                                {{ $product->created_at ? $product->created_at->format('j-m-Y') : 'N/A' }}
+                            </td>
+                            <td class="px-1 py-1 whitespace-nowrap text-[11px] text-gray-800">
+                                {{ $product->created_at ? $product->created_at->format('h:i A') : 'N/A' }}
+                            </td>
+                            <td class="p-1" x-show="!showSelected">
+                                <button id="dropdownDefaultButton-{{ $key }}" data-dropdown-toggle="dropdown-{{ $key }}" class="text-white bg-gray-900 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 rounded-lg text-[11px] px-1 py-1 text-center inline-flex items-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800" type="button">Action <svg class="w-2.5 h-1.5 ml-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
+                                    </svg></button>
+            
+                                <div id="dropdown-{{ $key }}" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 border-2">
+                                    <ul class="py-1 text-xs text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton-{{ $key }}">
+                                        @if ($mainUser->team_user != null)
+            
+                                        @if ($mainUser->team_user->permissions->permission->stock->edit_stock == 1)
+                                        <li>
+                                            <a href="javascript:void(0);" wire:click.prevent="selectChallanSeries('{{ json_encode($product) ?? '' }}')" data-modal-target="edit-modal" data-modal-toggle="edit-modal" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
+                                        </li>
+                                        @endif
+            
+                                        @if ($mainUser->team_user->permissions->permission->stock->delete_stock == 1)
+                                        <li>
+                                            <a href="javascript:void(0);" wire:click="$emit('triggerDelete', {{ $product->id ?? '' }})" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Delete</a>
+                                        </li>
+                                        @endif
+                                        @else
+                                        <li>
+                                            <a href="javascript:void(0);" wire:click.prevent="selectChallanSeries('{{ json_encode($product) ?? '' }}')" data-modal-target="edit-modal" data-modal-toggle="edit-modal" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);" wire:click="$emit('triggerDelete', {{ $product->id ?? '' }})" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Delete</a>
+                                        </li>
+                                        @endif
+                                        <li>
+                                            <a href="javascript:void(0);" wire:click="singleStockMove('{{ json_encode($product) }}')" @click="showModal = true" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Move Stock</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>    
+                </table>
+                @if($singleStockModal == true)
+                <!-- Modal for Moving Stock -->
+                <div id="move-stock-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div class="bg-white rounded-lg p-6 w-11/12 md:w-1/2 lg:w-1/3 text-center">
+                        <div class="mb-4">
+                            <h1 class="text-lg text-black pb-3 border-b border-gray-400">Move Category and Warehouse</h1>
+                
+                            <div class="mt-5">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="change-option" value="category" onclick="toggleOptions()" checked>
+                                    <span class="ml-2">Change Category</span>
+                                </label>
+                                <label class="inline-flex items-center ml-4">
+                                    <input type="radio" name="change-option" value="warehouse" onclick="toggleOptions()">
+                                    <span class="ml-2">Change Warehouse</span>
+                                </label>
+                                <label class="inline-flex items-center ml-4">
+                                    <input type="radio" name="change-option" value="location" onclick="toggleOptions()">
+                                    <span class="ml-2">Change Location</span>
+                                </label>
+                            </div>
+                
+                            <div id="category-option" class="relative w-full min-w-[200px] h-10 mt-5 flex items-center">
+                                <label for="category-select" class="w-1/3">Select Category:</label>
+                                <select id="category-select" wire:model.defer="moveCategories" class="js-example-basic-single w-2/3" name="category" onchange="validateForm()">
+                                    <option value="null">Select</option>
+                                    @foreach ($categories as $cat)
+                                        <option value="{{ $cat }}">{{ $cat }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                
+                            <div id="warehouse-option" class="relative w-full min-w-[200px] h-10 mt-5 flex items-center" style="display: none;">
+                                <label for="warehouse-select" class="w-1/3">Select Warehouse:</label>
+                                <select id="warehouse-select" wire:model.defer="moveWarehouses" class="js-example-basic-single w-2/3" name="warehouse" onchange="validateForm()">
+                                    <option value="null">Select</option>
+                                    @foreach ($warehouses as $ware)
+                                        <option value="{{ $ware }}">{{ ucfirst($ware) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                
+                            <div id="location-option" class="relative w-full min-w-[200px] h-10 mt-5 flex items-center" style="display: none;">
+                                <label for="location-select" class="w-1/3">Select Location:</label>
+                                <select id="location-select" wire:model.defer="moveLocations" class="js-example-basic-single w-2/3" name="location" onchange="validateForm()">
+                                    <option value="null">Select</option>
+                                    @foreach ($locations as $loc)
+                                        <option value="{{ $loc }}">{{ $loc }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                
+                            <div class="relative w-full min-w-[200px] h-10 mt-5 flex items-center">
+                                <label class="w-1/3">Current Quantity:</label>
+                                <p id="current-qty">{{ $singleStockMoveData['qty'] ?? 'N/A' }}</p>
+                            </div>
+                
+                            <div class="relative w-full min-w-[200px] h-10 mt-5 flex items-center">
+                                <label for="move-quantity-input" class="w-1/3">Move Quantity:</label>
+                                <input wire:model.defer="moveQty" id="move-quantity-input" type="number" class="w-2/3" oninput="validateQuantity()"  >
+                            </div>
+                
+                            <div id="error-message" class="text-red-500 mt-2" style="display: none;">
+                                Quantity cannot be greater than the available stock.
+                            </div>
+                
+                            <div class="flex flex-wrap items-center justify-end shrink-0 text-blue-gray-500 mt-5">
+                                <button x-on:click="openSearchModal = false" wire:click="closeModal"
+                                    class="ml-4 px-4 py-2.5 font-sans text-xs text-red-500 transition-all rounded-lg middle none center hover:bg-red-500/10 active:bg-red-500/30 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                                    Cancel
+                                </button>
+                                <button id="confirm-button" wire:click="singleStockMoveConfirm"
+                                    class="middle none center rounded-lg bg-gray-900 py-2.5 px-4 font-sans text-xs text-white shadow-md transition-all hover:shadow-lg active:opacity-[0.85] disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" disabled>
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                                
+                                 
+                                <script>
+                                    function toggleOptions() {
+                                    const selectedOption = document.querySelector('input[name="change-option"]:checked').value;
+                                    document.getElementById('category-option').style.display = selectedOption === 'category' ? 'flex' : 'none';
+                                    document.getElementById('warehouse-option').style.display = selectedOption === 'warehouse' ? 'flex' : 'none';
+                                    document.getElementById('location-option').style.display = selectedOption === 'location' ? 'flex' : 'none';
+                                    validateForm();
+                                }
+
+                                function validateForm() {
+                                    const selectedOption = document.querySelector('input[name="change-option"]:checked').value;
+                                    const categoryValue = document.getElementById('category-select').value;
+                                    const warehouseValue = document.getElementById('warehouse-select').value;
+                                    const locationValue = document.getElementById('location-select').value;
+
+                                    let isValid = false;
+
+                                    if (selectedOption === 'category' && categoryValue !== 'null') {
+                                        isValid = true;
+                                    } else if (selectedOption === 'warehouse' && warehouseValue !== 'null') {
+                                        isValid = true;
+                                    } else if (selectedOption === 'location' && locationValue !== 'null') {
+                                        isValid = true;
+                                    }
+
+                                    document.getElementById('confirm-button').disabled = !isValid;
+                                    document.getElementById('move-quantity-input').disabled = !isValid;
+
+                                    // Validate the moveQty input when form is valid
+                                    if (isValid) {
+                                        validateQuantity();
+                                    }
+                                }
+
+                                function validateQuantity() {
+                                    const moveQtyInput = document.getElementById('move-quantity-input');
+                                    const currentQty = parseInt(document.getElementById('current-qty').textContent);
+                                    const moveQty = parseInt(moveQtyInput.value);
+
+                                    // Check if moveQty is greater than current quantity
+                                    if (moveQty > currentQty) {
+                                        document.getElementById('error-message').style.display = 'block';
+                                        document.getElementById('confirm-button').disabled = true;
+                                    } else {
+                                        document.getElementById('error-message').style.display = 'none';
+                                        document.getElementById('confirm-button').disabled = false;
+                                    }
+                                }
+
+                                document.addEventListener('DOMContentLoaded', () => {
+                                    toggleOptions();
+                                });
+                // Event listener to detect tab change and reinitialize dropdown
+                       document.addEventListener('livewire:load', function () {
+                           Livewire.hook('message.processed', (message, component) => {
+                               // initDropdown();
+                               initSelectAllCheckbox();
+                               initFlowbite();
+                           });
+                       });
+   
+                       let selectedIds = [];
+       
+                       // Function to reinitialize the select-all checkbox
+                       function initSelectAllCheckbox() {
+                   // Get the select-all checkbox and individual product checkboxes
+                   const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+                   const productCheckboxes = document.querySelectorAll('.product-checkbox:not([value="all"])');
+                   const selectedCountSpan = document.getElementById('selectedCount');
+   
+                   // Add event listener to the select-all checkbox
+                   selectAllCheckbox.addEventListener('change', function () {
+                       const isChecked = this.checked;
+                       const visibleProductCheckboxes = document.querySelectorAll('.product-checkbox:not([value="all"]):not([style*="display: none"])');
+   
+                       visibleProductCheckboxes.forEach(checkbox => {
+                       checkbox.checked = isChecked;
+                       const productId = checkbox.value;
+                       if (isChecked && !selectedIds.includes(productId)) {
+                           selectedIds.push(productId);
+                       } else if (!isChecked && selectedIds.includes(productId)) {
+                           selectedIds = selectedIds.filter(id => id !== productId);
+                       }
+                       });
+   
+                       selectedCountSpan.textContent = selectedIds.length + ' Selected';
+                   });
+   
+                   // Add event listener to checkboxes to update selectedIds array
+                   productCheckboxes.forEach(checkbox => {
+                       checkbox.addEventListener('change', function() {
+                       const productId = this.value;
+                       if (this.checked && !selectedIds.includes(productId)) {
+                           selectedIds.push(productId);
+                       } else if (!this.checked && selectedIds.includes(productId)) {
+                           selectedIds = selectedIds.filter(id => id !== productId);
+                       }
+                       selectedCountSpan.textContent = selectedIds.length + ' Selected';
+                       });
+                   });
+                   }
+               document.addEventListener('livewire:load', function () {
+                   Livewire.hook('message.processed', (message, component) => {
+                       initFlowbite();
+                       console.log('hello');
+                       attachDeleteListener(); 
+                       // Alpine.discoverUninitializedComponents((el) => {
+                       //     Alpine.initializeComponent(el);
+                       // });
+                   });
+               });
+           // Define a global variable to store the checkboxes object
+            let checkboxesInstance;
+            function checkboxes() {
+        return {
+            selectedProducts: [],
+            currentPageIds: [],
+            showSelected: false,
+
+            initCheckboxes(ids) {
+                this.currentPageIds = ids;
+            },
+
+            get allChecked() {
+                return this.currentPageIds.length > 0 && this.currentPageIds.every(id => this.selectedProducts.includes(id));
+            },
+
+            get selectedCount() {
+                return this.selectedProducts.length;
+            },
+
+            toggleAll() {
+                if (this.allChecked) {
+                    this.selectedProducts = this.selectedProducts.filter(id => !this.currentPageIds.includes(id));
+                } else {
+                    this.selectedProducts = [...new Set([...this.selectedProducts, ...this.currentPageIds])];
+                }
+                this.updateAllChecked();
+                this.updateShowSelected();
+            },
+
+            updateAllChecked() {
+                this.allChecked = this.currentPageIds.length > 0 && this.currentPageIds.every(id => this.selectedProducts.includes(id));
+                this.updateShowSelected();
+            },
+
+            updateShowSelected() {
+                this.showSelected = this.selectedProducts.length > 0;
+            },
+
+            toggleProduct(productId) {
+                const index = this.selectedProducts.indexOf(productId);
+                if (index === -1) {
+                    this.selectedProducts.push(productId);
+                } else {
+                    this.selectedProducts.splice(index, 1);
+                }
+                this.updateAllChecked();
+            },
+
+            // New method to trigger toggleQuantityOptions with selectedProducts
+            // processSelectedProducts() {
+            //     toggleQuantityOptions(this.selectedProducts);
+            // }
+        }
+    }
+
+           
+               window.addEventListener('page-updated', event => {
+                   Alpine.find(document.querySelector('[x-data="checkboxes()"]')).initCheckboxes(event.detail.ids);
+               });
+           
+               function confirmDeletion(selectedProducts) {
+                   Swal.fire({
+                       title: 'Are you sure?',
+                       text: "You won't be able to revert this!",
+                       icon: 'warning',
+                       showCancelButton: true,
+                       confirmButtonColor: '#3085d6',
+                       cancelButtonColor: '#d33',
+                       confirmButtonText: 'Yes, delete it!'
+                   }).then((result) => {
+                       if (result.isConfirmed) {
+                           Livewire.emit('deleteSelectedItems', selectedProducts);
+           
+                           Swal.fire(
+                               'Deleted!',
+                               'Your file has been deleted.',
+                               'success'
+                           ).then(() => {
+                               Alpine.find(document.querySelector('[x-data="checkboxes()"]')).selectedProducts = [];
+                               Alpine.find(document.querySelector('[x-data="checkboxes()"]')).updateShowSelected();
+                               
+                               // Call checkboxes() function to update the selected products
+                               checkboxes();
+                           });
+                       }
+                   })
+               }
+
+               document.addEventListener('livewire:load', function () {
+                    Livewire.on('redirectToStock', function (message) {
+                        window.location.href = '{{ route('stock') }}';
+                        // alert(message); // Optional: Show the message as an alert
+                    });
+                });
+            //    document.addEventListener('livewire:load', function () {
+            //     console.log('hello');
+            //         // Initialize the moveStock function on Livewire load
+            //         window.moveStock = function (selectedProducts) {
+            //             Livewire.emit('moveStock', selectedProducts);
+            //         };
+
+            //         // Reinitialize the moveStock function on Livewire updates
+            //         Livewire.hook('message.processed', (message, component) => {
+            //             window.moveStock = function (selectedProducts) {
+            //                 Livewire.emit('moveStock', selectedProducts);
+            //             };
+            //         });
+            //     });
+   
+           //     document.addEventListener('livewire:load', function(e) {
+           //     @this.on('triggerDelete', id => {
+           //         Swal.fire({
+           //             title: "Are you sure?",
+           //             text: "Are you sure you want to delete?",
+           //             icon: "warning",
+           //             showCancelButton: true,
+           //             confirmButtonColor: "#6fc5e0",
+           //             cancelButtonColor: "#d33",
+           //             confirmButtonText: "Delete",
+           //         }).then((result) => {
+           //             if (result.value) {
+           //                 @this.call('deleteProduct', id);
+           //                 console.log('hello');
+           //             } else {
+           //                 console.log("Canceled");
+           //             }
+           //         });
+           //     });
+           // });
+           document.addEventListener('livewire:load', function() {
+               function attachDeleteListeners() {
+                   Livewire.on('triggerDelete', id => {
+                       Swal.fire({
+                           title: "Are you sure?",
+                           text: "Are you sure you want to delete?",
+                           icon: "warning",
+                           showCancelButton: true,
+                           confirmButtonColor: "#6fc5e0",
+                           cancelButtonColor: "#d33",
+                           confirmButtonText: "Delete",
+                       }).then((result) => {
+                           if (result.value) {
+                               Livewire.emit('deleteProduct', id);
+                               console.log('hello');
+                           } else {
+                               console.log("Canceled");
+                           }
+                       });
+                   });
+               }
+   
+               attachDeleteListeners();
+   
+               Livewire.on('componentUpdated', () => {
+                   attachDeleteListeners();
+               });
+           });
+   
+    
+           </script>
+        </div>
+        {{ $products->links() }}
+
+        <!-- Default Modal -->
+        <div id="edit-modal" tabindex="-1" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full" wire:ignore>
+            <div class="relative w-full max-w-lg max-h-full">
+                <!-- Modal content -->
+                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                    <!-- Modal header -->
+                    <div class="flex items-center justify-between p-2 border-b rounded-t dark:border-gray-600">
+                        <h3 class="text-lg text-gray-900 dark:text-white">
+                            Edit Product
+
+                        </h3>
+                        <button type="button" wire:click.prevent='resetChallanSeries()' class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="edit-modal">
+                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                            </svg>
+                            <span class="sr-only">Close modal</span>
+                        </button>
+                    </div>
+                    <!-- Modal body -->
+                        <div class="p-6 space-y-6 ">
+                            <div class="-mx-2 grid grid-cols-2">
+                                @foreach ($panelUserColumnDisplayNames as $key => $columnName)
+                                    @if (!empty($columnName))
+                                        @php
+                                            $this->editChallanRequest['details']['column_name'] = $columnName;
+                                        @endphp
+                                            <div class="px-2">
+                                                <label for="item-code" class="block mb-1 text-xs  text-gray-900 dark:text-white">{{ $columnName }}
+                                                    @if ($columnName === 'Article')
+                                                        <span class="text-red-600">*</span>
+                                                    @endif
+                                                </label>
+                                                <input 
+                                                    wire:model.defer="editChallanRequest.details.{{ $key }}.column_value"
+                                                    class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    type="text" />
+                                                    @error("editChallanRequest.details.{$key}.column_value")
+                                                    <span class="text-red-600 text-xs">{{ $message }}</span>
+                                                    @enderror
+                                                    
+                                            </div>
+                                            @endif
+                                @endforeach
+                                <div class="px-2">
+                                    <label for="item-code" class="block mb-1 text-xs  text-gray-900 dark:text-white">Item Code<span
+                                        class="text-red-600">*</span></label>
+                                    <input type="text" wire:model.defer="editChallanRequest.item_code" id="item-code" disabled class="block w-full cursor-not-allowed p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                    @error('editChallanRequest.item_code')
+                                        <span class="text-red-600 text-xs">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div class="px-2">
+                                    <label for="category" class="block mb-1 text-xs  text-gray-900 dark:text-white">Category</label>
+                                    <input type="text" wire:model.defer="editChallanRequest.category" id="category" class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                
+                                </div>
+                                <div class="px-2">
+                                    <label for="warehouse" class="block mb-1 text-xs  text-gray-900 dark:text-white">Warehouse</label>
+                                    <input type="text" wire:model.defer="editChallanRequest.warehouse" id="warehouse" class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                
+                                </div>
+                                <div class="px-2">
+                                    <label for="location" class="block mb-1 text-xs  text-gray-900 dark:text-white">Location</label>
+                                    <input type="text" wire:model.defer="editChallanRequest.location" id="location" class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                
+                                </div>
+                                <div class="px-2">
+                                    <label for="unit" class="block mb-1 text-xs  text-gray-900 dark:text-white">Unit</label>
+                                    <input type="text" wire:model.defer="editChallanRequest.unit" id="unit" class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                </div>
+                                
+                        
+                                <div class="px-2">
+                                    <label for="rate" class="block mb-1 text-xs  text-gray-900 dark:text-white">Rate</label>
+                                    <input type="text" wire:model.defer="editChallanRequest.rate" id="rate" class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                </div>
+                                {{-- <div class="px-2">
+                                    <label for="rate" class="block mb-1 text-xs  text-gray-900 dark:text-white">With Tax</label>
+                                    <input type="text" wire:model.defer="editChallanRequest.with_tax" id="with_tax" class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                </div> --}}
+                                <div class="px-2">
+                                    <label for="tax" class="block mb-1 text-xs  text-gray-900 dark:text-white">Tax(%)</label>
+                                    <input type="text" wire:model.defer="editChallanRequest.tax" id="tax" class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                </div>
+                                <div class="px-2">
+                                    <label for="qty" class="block mb-1 text-xs  text-gray-900 dark:text-white">Qty</label>
+                                    <input type="text" wire:model.defer="editChallanRequest.qty" id="qty" class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                </div>
+                                </div>
+                    
+                        <!-- Modal footer -->
+                        <div class="flex items-center p-2 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+                            <button data-modal-hide="edit-modal" type="button" wire:click.prevent='editProduct' class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Update</button>
+                            {{-- <button data-modal-hide="edit-modal" type="button" wire:click.prevent='resetChallanSeries()' class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">Close</button> --}}
+                        </div>
+                    </div>
+                </div>
+                                        
+    
+                            
+            </div>
+            </div>
+        </div>
+        
+        
+                               <div x-data="{
+                                        openSearchModal: @entangle('openSearchModal'),
+                                        selectedTags: @entangle('selectedTags'),
+                                        temporarySelectedTags: @entangle('selectedTags').defer,
+                                        isSaveDisabled() {
+                                            return this.temporarySelectedTags.length === 0;
+                                        }
+                                    }"
+                                    x-show="openSearchModal"
+                                    x-on:keydown.escape.window="openSearchModal = false"
+                                    x-on:close.stop="openSearchModal = false"
+                                    class="fixed inset-0 flex items-center justify-center z-50 max-w-full backdrop-blur-sm bg-black bg-opacity-60 hidden" wire:ignore.self id="modal-container">
+                                    <div class="bg-white p-6 rounded shadow-lg w-full max-w-2xl">
+                                        <div class="mb-4">
+                                            <h1 class="text-lg text-black">Move Category and Warehouse</h1>
+                                            <h1 class="text-sm text-black border-b border-gray-400">This will move all Qty your selected Items</h1>
+                                        
+                                            <div class="mt-5">
+                                                <label class="inline-flex items-center">
+                                                    <input type="radio" name="change-option" value="category" onclick="toggleOptions()" checked>
+                                                    <span class="ml-2">Change Category</span>
+                                                </label>
+                                                <label class="inline-flex items-center ml-4">
+                                                    <input type="radio" name="change-option" value="warehouse" onclick="toggleOptions()">
+                                                    <span class="ml-2">Change Warehouse</span>
+                                                </label>
+                                                <label class="inline-flex items-center ml-4">
+                                                    <input type="radio" name="change-option" value="locations" onclick="toggleOptions()">
+                                                    <span class="ml-2">Change Location</span>
+                                                </label>
+                                            </div>
+                                            
+                                            <div id="category-option" class="relative w-full min-w-[200px] h-10 mt-5 flex items-center">
+                                                <label for="category-select" class="w-1/3">Select Category:</label>
+                                                <select id="category-select" wire:model.defer="moveCategories" class="js-example-basic-single w-2/3" name="category" onchange="validateForm()">
+                                                    <option value="null">Select</option>
+                                                    @foreach ($categories as $cat)
+                                                        <option value="{{ $cat }}">{{ $cat }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            
+                                            <div id="warehouse-option" class="relative w-full min-w-[200px] h-10 mt-5 flex items-center" style="display: none;">
+                                                <label for="warehouse-select" class="w-1/3">Select Warehouse:</label>
+                                                <select id="warehouse-select" wire:model.defer="moveWarehouses" class="js-example-basic-single w-2/3" name="warehouse" onchange="validateForm()">
+                                                    <option value="null">Select</option>
+                                                    @foreach ($warehouses as $ware)
+                                                        <option value="{{ $ware }}">{{ ucfirst($ware) }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div id="location-option" class="relative w-full min-w-[200px] h-10 mt-5 flex items-center" style="display: none;">
+                                                <label for="location-select" class="w-1/3">Select location:</label>
+                                                <select id="location-select" wire:model.defer="moveLocations" class="js-example-basic-single w-2/3" name="location" onchange="validateForm()">
+                                                    <option value="null">Select</option>
+                                                    @foreach ($locations as $loc)
+                                                        <option value="{{ $loc }}">{{ ucfirst($loc) }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="mt-5" wire:ignore.self>
+                                                <label class="inline-flex items-center">
+                                                    <input wire:model.defer="quantityOption" type="radio" name="quantity-option" value="all" onclick="toggleQuantityOptions()" checked>
+                                                    <span class="ml-2">Move All Quantity</span>
+                                                </label>
+                                                <label class="inline-flex items-center ml-4">
+                                                    <input wire:model.defer="quantityOption" type="radio" name="quantity-option" value="additive" onclick="toggleQuantityOptions()">
+                                                    <span class="ml-2">Decide Individually</span>
+                                                </label>
+                                            </div>
+                                           <!-- Other content -->
+                                           <input type="hidden" id="selected-ids" value="{{ implode(',', $selectedIds) }}">
+                                            <!-- Include the Livewire component for additive quantity -->
+                                            <livewire:dashboard.stock.stock-movement :selected-ids="$selectedIds" />
+                                            
+                                            <div class="flex flex-wrap items-center justify-end shrink-0 text-blue-gray-500 mt-5">
+                                                <button x-on:click="openSearchModal = false" wire:click="closeModal"
+                                                        class="ml-4 px-4 py-2.5 font-sans text-xs text-red-500 transition-all rounded-lg middle none center hover:bg-red-500/10 active:bg-red-500/30 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                                                    Cancel
+                                                </button>
+                                                <button id="confirm-button" wire:click="moveCategoryAndWarehouse"
+                                                        class="middle none center rounded-lg bg-gray-900 py-2.5 px-4 font-sans text-xs text-white shadow-md transition-all hover:shadow-lg active:opacity-[0.85] disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                                                    Confirm
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                
+                <script>
+                    function toggleOptions() {
+                        const selectedOption = document.querySelector('input[name="change-option"]:checked').value;
+                        document.getElementById('category-option').style.display = selectedOption === 'category' ? 'flex' : 'none';
+                        document.getElementById('warehouse-option').style.display = selectedOption === 'warehouse' ? 'flex' : 'none';
+                        document.getElementById('location-option').style.display = selectedOption === 'locations' ? 'flex' : 'none';
+                        validateForm();
+                    }
+                    // Initialize the checkboxes instance and store it in the global variable
+                    document.addEventListener('DOMContentLoaded', () => {
+                        checkboxesInstance = checkboxes();
+                    });
+                
+                    function toggleQuantityOptions() {
+                    const selectedQuantityOption = document.querySelector('input[name="quantity-option"]:checked').value;
+                    if (selectedQuantityOption === 'additive') {
+                        const selectedOption = document.querySelector('input[name="change-option"]:checked').value;
+                        const categoryValue = document.getElementById('category-select').value;
+                        const warehouseValue = document.getElementById('warehouse-select').value;
+                        const locationValue = document.getElementById('location-select').value;
+
+                        // Retrieve the selected IDs (assuming they are stored in a hidden input or similar)
+                        const selectedIds = document.getElementById('selected-ids').value;
+
+                        // Prepare the data to pass to the modal
+                        const data = {
+                            category: selectedOption === 'category' ? categoryValue : null,
+                            warehouse: selectedOption === 'warehouse' ? warehouseValue : null,
+                            location: selectedOption === 'locations' ? locationValue : null,
+                            selectedIds: selectedIds // Include the selected IDs
+                        };
+
+                        // Emit the event to open the modal via Livewire
+                        Livewire.emit('openAdditiveModal', data);
+                    }
+                }
+
+
+                
+                    function validateForm() {
+                        const selectedOption = document.querySelector('input[name="change-option"]:checked').value;
+                        const categoryValue = document.getElementById('category-select').value;
+                        const warehouseValue = document.getElementById('warehouse-select').value;
+                        const locationValue = document.getElementById('location-select').value;
+                
+                        let isValid = false;
+                
+                        if (selectedOption === 'category' && categoryValue !== 'null') {
+                            isValid = true;
+                        } else if (selectedOption === 'warehouse' && warehouseValue !== 'null') {
+                            isValid = true;
+                        } else if (selectedOption === 'locations' && locationValue !== 'null') {
+                            isValid = true;
+                        }
+                
+                        document.getElementById('confirm-button').disabled = !isValid;
+                    }
+                
+                    document.addEventListener('DOMContentLoaded', function () {
+                        Livewire.emit('moveStock', selectedProducts);
+                        Livewire.emit('openModal');
+                        toggleOptions();
+                    });
+                    document.addEventListener('livewire:load', function () {
+                    window.moveStock = function (selectedProducts) {
+                        console.log(selectedProducts);
+                        Livewire.emit('moveStock', selectedProducts);
+                        Livewire.emit('openModal');
+                    };
+
+                    Livewire.on('openModal', () => {
+                        @this.set('openSearchModal', true);
+                        document.getElementById('modal-container').classList.remove('hidden');
+                    });
+                    Livewire.on('openModal', () => {
+                        @this.set('singleModalopen', true);
+                        document.getElementById('modal-container').classList.remove('hidden');
+                    });
+                });
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    @this.set('openSearchModal', false);
+                });
+                document.addEventListener('DOMContentLoaded', function() {
+                    @this.set('singleModalopen', false);
+                });
+            </script>
+        {{-- <th x-show="selectedCount > 0" class="text-black lowercase text-xs text-left">Selected: <span x-text="selectedCount"></span></th> --}}
+        
+       
+</div>

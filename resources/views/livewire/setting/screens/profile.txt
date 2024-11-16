@@ -1,0 +1,137 @@
+ {{-- <form class="grid gap-4" wire:submit.prevent="updateData"> --}}
+    <div class="mb-4 border-b border-gray-200 dark:border-gray-700 p-6 rounded-lg bg-[#e9e6e6] dark:bg-gray-800">
+
+        My Profile
+
+        {{-- @livewire('livewire-ui.debug') --}}
+        <div id="myTabContent" class=" p-4 rounded-lg dark:bg-gray-800 ">
+
+            <div class="" id="seller-manually" role="tabpanel" aria-labelledby="seller-manually-tab">
+                <div class="mt-2">
+                    @if ($statusCode == 200)
+                    <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400">
+                        {{ $successMessage }}
+                    </div>
+                    @elseif ($statusCode == 400)
+                    <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400">
+                        {{ $errorMessage }}
+                    </div>
+                    @endif
+                    
+                        <div class="relative">
+                            <label for="special_id" class="block text-sm font-medium">User Code</label>
+                            <div class="relative">
+                                <input type="text" wire:model="updateProfileData.special_id" name="special_id" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500" disabled>
+                            
+                                <button onclick="copyToClipboard('{{ $updateProfileData['special_id'] }}')" data-tooltip-target="tooltip-bottom-user" data-tooltip-placement="bottom" class="absolute right-2 top-1/2 transform -translate-y-1/2 focus:outline-none cursor-pointer">
+                                    <svg class="w-3.5 h-3.5 cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20" title="Copy">
+                                        <path d="M5 9V4.13a2.96 2.96 0 0 0-1.293.749L.879 7.707A2.96 2.96 0 0 0 .13 9H5Zm11.066-9H9.829a2.98 2.98 0 0 0-2.122.879L7 1.584A.987.987 0 0 0 6.766 2h4.3A3.972 3.972 0 0 1 15 6v10h1.066A1.97 1.97 0 0 0 18 14V2a1.97 1.97 0 0 0-1.934-2Z"></path>
+                                        <path d="M11.066 4H7v5a2 2 0 0 1-2 2H0v7a1.969 1.969 0 0 0 1.933 2h9.133A1.97 1.97 0 0 0 13 18V6a1.97 1.97 0 0 0-1.934-2Z"></path>
+                                    </svg>
+                                </button>
+                                <div id="tooltip-bottom-user" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                                    Copy
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div>
+                            </div>
+                            
+                            
+                            
+                        </div>
+                        <div>
+                            <label for="seller_name" class="block text-sm font-medium ">Name <span class="text-red-600">*</span></label>
+                            <input type="text" wire:model="updateProfileData.name" name="name" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus: ">
+                        </div>
+                        <div>
+                            <label for="company_name" class="block text-sm font-medium ">Company Name</label>
+                            <input type="text" wire:model.defer="updateProfileData.company_name" name="company_name" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 ">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium ">Phone Number</label>
+                            <input type="text" wire:model.defer="updateProfileData.phone" name="phone" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 " disabled>
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium">E-Mail</label>
+                            <input type="text" wire:model="updateProfileData.email" id="email" name="email" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500">
+                            @error('addSellerData.email')
+                            <p class="text-red-500 text-sm">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+
+                            <label for="address" class="block text-sm font-medium">Address <span class="text-red-600">*</span></label>
+                            <input type="text" wire:model.defer="updateProfileData.address"  name="address" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 ">
+                        </div>
+                        <div>
+                            <label for="pincode" class="block text-sm font-medium">Pincode <span class="text-red-600">*</span></label>
+                            <input type="text" wire:model.defer="updateProfileData.pincode"  name="pincode" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 ">
+                        </div>
+                        <div>
+                            <label for="city" class="block text-sm font-medium">City <span class="text-red-600">*</span></label>
+                            <input type="text" wire:model.defer="updateProfileData.city" name="city" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 ">
+                        </div>
+                        <div>
+                            <label for="state" class="block text-sm font-medium">State <span class="text-red-600">*</span></label>
+                            <input type="text" wire:model.defer="updateProfileData.state" name="state" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 ">
+                        </div>
+                        
+                        
+
+                     
+                    {{-- </form> --}}
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-5xl mt-4 mx-auto " id="receiver-manually" role="tabpanel"
+        aria-labelledby="receiver-manually-tab">
+        <div class="flex justify-end items-center">
+            <label for="toggleInput" class="block text-xs font-italic mr-3">Additional Info</label>
+            <button id="toggleInput" class="p-2 rounded-full bg-[#E5F881] focus:outline-none focus:ring-2 ">
+                <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+            </button>
+        </div>
+        <div>
+            <!-- Plus icon to toggle the input boxes -->
+            <div class="relative mt-2">
+                <!-- <div class="mb-4 border-b border-gray-200 dark:border-gray-700 p-6 rounded-lg bg-white dark:bg-gray-800"> -->
+                <div id="inputBoxes" class="hidden mt-2 bg-[#e9e6e6] p-6 rounded-lg">
+                    <!-- Add your input boxes here -->
+                    <div>
+                        <label for="pancard" class="block text-sm font-medium">Pancard</label>
+                        <input type="text" wire:model.defer="updateProfileData.pancard"  name="pancard" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 ">
+                    </div>
+                    <div>
+                        <label for="gst_number" class="block text-sm font-medium">Gst Number</label>
+                        <input type="text" wire:model.defer="updateProfileData.gst_number"  name="gst_number" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 ">
+                    </div>
+                    
+                    <div>
+                        <label for="bank_name" class="block text-sm font-medium">Bank Name</label>
+                        <input type="text" wire:model.defer="updateProfileData.bank_name" name="bank_name" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 ">
+                    </div>
+                    <div>
+                        <label for="branch_name" class="block text-sm font-medium">Branch Name</label>
+                        <input type="text" wire:model.defer="updateProfileData.branch_name"  name="branch_name" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 ">
+                    </div>
+                    <div>
+                        <label for="bank_account_no" class="block text-sm font-medium">Bank Account Number</label>
+                        <input type="text" wire:model.defer="updateProfileData.bank_account_no"  name="bank_account_no" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 ">
+                    </div>
+                    <div>
+                        <label for="ifsc_code" class="block text-sm font-medium">IFSC Code.</label>
+                        <input type="text" wire:model.defer="updateProfileData.ifsc_code"  name="ifsc_code" class="mt-1 p-2 h-8 block w-full rounded-md bg-[#aeaaaa] border-transparent focus:border-gray-500 ">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="flex justify-center">
+        <button type="button"  wire:click.prevent="updateData" class="rounded-full w-full bg-gray-900 px-8 py-2 mt-2 text-white hover:bg-yellow-200 hover:text-black">Update</button>
+    </div>

@@ -1,0 +1,130 @@
+  2023-11-03 04:52:46 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:52:47 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:52:47 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:52:49 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:52:49 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:53:17 App\Jobs\InsertChallanDataJob ................. 28s DONE
+  2023-11-03 04:53:17 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:53:41 App\Jobs\InsertChallanDataJob ................. 23s DONE
+  2023-11-03 04:53:41 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:54:04 App\Jobs\InsertChallanDataJob ................. 22s FAIL
+  2023-11-03 04:54:04 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:54:14 App\Jobs\InsertChallanDataJob .................. 9s FAIL
+  2023-11-03 04:54:14 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:54:30 App\Jobs\InsertChallanDataJob ................. 15s FAIL
+  2023-11-03 04:54:32 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:54:36 App\Jobs\InsertChallanDataJob .................. 4s FAIL
+  2023-11-03 04:54:44 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:54:45 App\Jobs\InsertChallanDataJob ............ 447.59ms FAIL
+  2023-11-03 04:54:45 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:54:46 App\Jobs\InsertChallanDataJob ............ 324.05ms FAIL
+  2023-11-03 04:54:46 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:54:46 App\Jobs\InsertChallanDataJob ............ 268.86ms FAIL
+  2023-11-03 04:54:47 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:55:19 App\Jobs\InsertChallanDataJob ................. 32s FAIL
+  2023-11-03 04:55:19 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:55:35 App\Jobs\InsertChallanDataJob ................. 15s DONE
+  2023-11-03 04:55:35 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:55:39 App\Jobs\InsertChallanDataJob .................. 3s DONE
+  2023-11-03 04:55:39 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:55:39 App\Jobs\InsertChallanDataJob ............ 160.88ms DONE
+  2023-11-03 04:55:39 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 04:55:39 App\Jobs\InsertChallanDataJob ............ 157.88ms DONE
+  2023-11-03 04:57:54 App\Jobs\InsertChallanDataJob ............... 5m 5s DONE
+  2023-11-03 04:58:23 App\Jobs\InsertChallanDataJob .............. 5m 35s DONE
+  2023-11-03 05:13:34 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:13:34 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:13:34 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:13:34 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:13:35 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:14:05 App\Jobs\InsertChallanDataJob ................. 30s DONE
+  2023-11-03 05:14:06 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:14:31 App\Jobs\InsertChallanDataJob ................. 25s DONE
+  2023-11-03 05:14:31 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:14:53 App\Jobs\InsertChallanDataJob ................. 21s FAIL
+  2023-11-03 05:14:54 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:15:04 App\Jobs\InsertChallanDataJob ................. 10s FAIL
+  2023-11-03 05:15:07 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:15:11 App\Jobs\InsertChallanDataJob .................. 4s FAIL
+  2023-11-03 05:15:17 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:15:18 App\Jobs\InsertChallanDataJob ............ 360.10ms FAIL
+  2023-11-03 05:15:18 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:15:18 App\Jobs\InsertChallanDataJob ............ 266.30ms FAIL
+  2023-11-03 05:15:19 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:15:19 App\Jobs\InsertChallanDataJob ............ 275.24ms FAIL
+  2023-11-03 05:15:19 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:15:36 App\Jobs\InsertChallanDataJob ................. 16s FAIL
+  2023-11-03 05:15:37 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:16:06 App\Jobs\InsertChallanDataJob ................. 29s FAIL
+  2023-11-03 05:16:06 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:16:22 App\Jobs\InsertChallanDataJob ................. 15s DONE
+  2023-11-03 05:16:22 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:16:25 App\Jobs\InsertChallanDataJob .................. 2s DONE
+  2023-11-03 05:16:25 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:16:25 App\Jobs\InsertChallanDataJob ............ 166.24ms DONE
+  2023-11-03 05:16:25 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:16:25 App\Jobs\InsertChallanDataJob ............ 160.63ms DONE
+  2023-11-03 05:18:30 App\Jobs\InsertChallanDataJob .............. 4m 56s DONE
+  2023-11-03 05:19:04 App\Jobs\InsertChallanDataJob .............. 5m 30s DONE
+  2023-11-03 05:20:05 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:20:05 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:20:07 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:23:09 App\Jobs\InsertChallanDataJob .............. 9m 35s FAIL
+  2023-11-03 05:23:13 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:23:17 App\Jobs\InsertChallanDataJob .................. 4s FAIL
+  2023-11-03 05:23:26 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:23:27 App\Jobs\InsertChallanDataJob ............ 581.82ms FAIL
+  2023-11-03 05:23:28 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:23:28 App\Jobs\InsertChallanDataJob ............ 283.56ms FAIL
+  2023-11-03 05:23:28 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:25:45 App\Jobs\InsertChallanDataJob .............. 5m 37s DONE
+  2023-11-03 05:25:45 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 05:25:45 App\Jobs\InsertChallanDataJob ............ 295.16ms FAIL
+  2023-11-03 05:25:46 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:26:29 App\Jobs\InsertChallanDataJob  2023-11-03 07:26:29 App\Jobs\InsertChallanDataJob .................. RUNNING
+ .................. RUNNING
+  2023-11-03 07:26:29 App\Jobs\InsertChallanDataJob ............ 181.58ms FAIL
+  2023-11-03 07:26:30 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:26:30 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:26:30 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:26:31 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:26:50 App\Jobs\InsertChallanDataJob  2023-11-03 07:26:51 App\Jobs\InsertChallanDataJob ................. 19s FAIL
+ ................. 20s FAIL
+  2023-11-03 07:26:54 App\Jobs\InsertChallanDataJob ................. 24s DONE
+  2023-11-03 07:27:08 App\Jobs\InsertChallanDataJob ................. 37s DONE
+  2023-11-03 07:27:17 App\Jobs\InsertChallanDataJob ................. 47s DONE
+  2023-11-03 07:43:16 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:43:17 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:43:17 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:43:17 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:43:18 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:43:42 App\Jobs\InsertChallanDataJob ................. 24s DONE
+  2023-11-03 07:43:42 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:44:04 App\Jobs\InsertChallanDataJob ................. 21s DONE
+  2023-11-03 07:44:04 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:47:32 App\Jobs\InsertChallanDataJob .............. 4m 15s DONE
+  2023-11-03 07:47:34 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:47:38 App\Jobs\InsertChallanDataJob .................. 3s FAIL
+  2023-11-03 07:47:44 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:47:45 App\Jobs\InsertChallanDataJob ............ 589.38ms FAIL
+  2023-11-03 07:47:45 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:47:45 App\Jobs\InsertChallanDataJob ............ 267.87ms FAIL
+  2023-11-03 07:47:46 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:47:46 App\Jobs\InsertChallanDataJob ............ 341.56ms FAIL
+  2023-11-03 07:47:47 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:48:01 App\Jobs\InsertChallanDataJob .............. 4m 43s DONE
+  2023-11-03 07:48:01 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:48:32 App\Jobs\InsertChallanDataJob ................. 45s DONE
+  2023-11-03 07:48:32 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:48:38 App\Jobs\InsertChallanDataJob ................. 37s DONE
+  2023-11-03 07:48:38 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:48:51 App\Jobs\InsertChallanDataJob ................. 13s DONE
+  2023-11-03 07:48:52 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:48:54 App\Jobs\InsertChallanDataJob .................. 2s DONE
+  2023-11-03 07:48:55 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:48:55 App\Jobs\InsertChallanDataJob ............ 178.72ms DONE
+  2023-11-03 07:48:55 App\Jobs\InsertChallanDataJob .................. RUNNING
+  2023-11-03 07:48:55 App\Jobs\InsertChallanDataJob ............ 139.82ms DONE
+  2023-11-03 07:49:20 App\Jobs\InsertChallanDataJob ................. 47s DONE
+  2023-11-03 07:51:33 App\Jobs\InsertChallanDataJob .............. 7m 29s DONE
+  2023-11-03 07:52:03 App\Jobs\InsertChallanDataJob .............. 8m 47s DONE
